@@ -15,6 +15,7 @@ class Database:
 
     def update_cpu_list(self, method: str):
         def with_selenium():
+            return {"error": "this feature is deprecated"}
             from selenium import webdriver
             from selenium.webdriver.common.by import By
             from selenium.webdriver.support.select import Select
@@ -44,7 +45,7 @@ class Database:
                 at_index = text.find('@')
                 if at_index != -1:
                     temp.update({headers[0]: text[0:at_index].rstrip()})  # updates the name
-                    text = text[at_index+1:].lstrip()  # removes text up to @ symbol
+                    text = text[at_index + 1:].lstrip()  # removes text up to @ symbol
                     # proceeds to add properties in orders of headers
                     # can cause errors if more than one category is present and written separated by comma (,)
                     _list = text.split()
@@ -85,6 +86,7 @@ class Database:
             return {}
 
         def with_requests():
+            return {"error": "This feature is not available yet"}
             import requests
             cookies = "PHPSESSID=1epjoi3d5vasbfjtdk2j15qctu; _gid=GA1.2.1601590461.1702139575; _ga=GA1.1.1336255102.1702051043; _ga_CMWM67JT90=GS1.1.1702139575.2.1.1702141329.0.0.0"
             response = requests.get("https://www.cpubenchmark.net/data/?_=1702141329768", headers={"Cookie": cookies})
@@ -93,25 +95,32 @@ class Database:
                 del response
                 with open('cpu_response_example.json', 'w') as example:
                     json.dump(data, example, indent=4)
-            return {"error": "This feature is not available yet"}
+
+        def with_downloaded_response():
+            with open('all_jsons/megalist_response.json', 'r') as megalist, \
+                    open(self._cpu_list_location, 'w') as cpu_list_file:
+                json.dump({"cpu_list": json.load(megalist)['data']}, cpu_list_file, indent=4)
+            return {}
 
         if method in ['s', 'sel', 'selenium']:
-            response = with_selenium()
+            db_response = with_selenium()
         elif method in ['r', 'req', 'request', 'requests']:
-            response = with_requests()
+            db_response = with_requests()
+        elif method in ['d', 'down', 'downl', 'downloaded']:
+            db_response = with_downloaded_response()
         else:
             return {'error': "wrong method"}
 
-        if 'error' not in response.keys():
+        if 'error' not in db_response.keys():
             return {"status": 200, "message": "updated successfully"}
         else:
-            return response
+            return db_response
 
     def get_cpu_list(self):
         try:
             with open(self._cpu_list_location, 'x'):
-                print("CPU List wasn't found in the database. Fetching the values from the website")
-                self.update_cpu_list(method='selenium')
+                print("CPU List wasn't found in the database. Updating it through backup file")
+                self.update_cpu_list(method='downloaded')
                 return self.get_cpu_list()
         except FileExistsError:
             print("Found a record in the database. Returning...")
@@ -122,13 +131,9 @@ class Database:
 db = Database()
 
 if __name__ == '__main__':
-    print(db.update_cpu_list(method='selenium'))
-    cpu_list = db.get_cpu_list()
-    temp = []
-    for cpu in cpu_list:
-        try:
-            if int(cpu['Cores']) >= 4:
-                temp.append(cpu)
-        except ValueError:
-            print(f"Non-integer value of cores found:\n{cpu}")
-    print(len(temp))
+    response = db.update_cpu_list(method='d')
+    if 'error' not in response.keys():
+        cpu_list = db.get_cpu_list()
+        print(cpu_list)
+    else:
+        print(response['error'])
