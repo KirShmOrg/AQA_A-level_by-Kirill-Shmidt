@@ -72,6 +72,16 @@ class Database:
         else:
             return component_list['GPU'][2:]
 
+    @staticmethod
+    def get_mb_list(params: dict):
+        from motherboarddbcom import parse_motherboards_list
+        mb_list = parse_motherboards_list(params=params)
+        if 'error' in mb_list.keys():
+            print(mb_list['error'])
+            return
+        else:
+            return mb_list
+
 
 db = Database()
 
@@ -89,3 +99,9 @@ if __name__ == '__main__':
                                        'performance': '1080'})
     print(cpu_list)
     print(gpu_list)
+    mb_list = db.get_mb_list(params={'manufacturer': 'Asus',
+                                     'form_factor': 'Micro-ATX',
+                                     'socket': 'AM4',
+                                     'chipset': 'AMD B450',
+                                     })
+    print(mb_list)
