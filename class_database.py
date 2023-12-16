@@ -86,7 +86,7 @@ class Database:
             return {}
 
         def with_requests():
-            return {"error": "This feature is not available yet"}
+            return {"error": "this feature is deprecated"}
             import requests
             cookies = "PHPSESSID=1epjoi3d5vasbfjtdk2j15qctu; _gid=GA1.2.1601590461.1702139575; _ga=GA1.1.1336255102.1702051043; _ga_CMWM67JT90=GS1.1.1702139575.2.1.1702141329.0.0.0"
             response = requests.get("https://www.cpubenchmark.net/data/?_=1702141329768", headers={"Cookie": cookies})
@@ -97,17 +97,25 @@ class Database:
                     json.dump(data, example, indent=4)
 
         def with_downloaded_response():
+            return {"error": "this feature is deprecated"}
             with open('all_jsons/megalist_response.json', 'r') as megalist, \
                     open(self._cpu_list_location, 'w') as cpu_list_file:
                 json.dump({"cpu_list": json.load(megalist)['data']}, cpu_list_file, indent=4)
             return {}
 
+        def with_techpowerup():
+            import techpowerup
+            return {'error': 'This feature is not ready yet'}
+
+        method = method.lower()
         if method in ['s', 'sel', 'selenium']:
             db_response = with_selenium()
         elif method in ['r', 'req', 'request', 'requests']:
             db_response = with_requests()
         elif method in ['d', 'down', 'downl', 'downloaded']:
             db_response = with_downloaded_response()
+        elif method in ['t', 'tech', 'techpower', 'techpowerup']:
+            db_response = with_techpowerup()
         else:
             return {'error': "wrong method"}
 
