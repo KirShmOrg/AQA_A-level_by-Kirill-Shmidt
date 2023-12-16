@@ -29,6 +29,7 @@ def get_labels_with_values(hardware_name: str):
         return {'error': f'updating {hardware_name} is not possible'}
 
     def remove_parenthesis(string: str):
+        # TODO: figure our whether we need this at all
         start = string.find('(')
         end = string.find(')')
         if start != -1 and end != -1 and end > start:
@@ -43,10 +44,14 @@ def get_labels_with_values(hardware_name: str):
                 siblings.append(sibling.contents)
         result.update({label['for']: siblings})
     for property_name, options_list in result.items():
-        temp = []
+        temp = {}
         for option in options_list[0]:
             if type(option) == Tag:
-                temp.append(remove_parenthesis(option.text))
+                temp.update({option['value']: option.text})
+                # TODO: we might want to use remove_parenthesis() to extract the number of results for specific filter.
+                #  However, the values are not correct when applying multiple filters at the same time,
+                #  thus either don't bother or apply filters one by one and get values each time, but this is a lot
+                #  of requests
         result.update({property_name: temp})
     return result
 
