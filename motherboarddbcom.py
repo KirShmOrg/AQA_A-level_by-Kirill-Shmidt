@@ -5,7 +5,7 @@ from bs4.element import Tag
 BASE_URL = "https://motherboarddb.com/motherboards/"
 
 
-def get_filters():
+def parse_filters():
     result = {}
     response = requests.get(f"{BASE_URL}")
     page = BeautifulSoup(response.text, features="html.parser")
@@ -27,6 +27,6 @@ def horse_around():
 
 
 if __name__ == '__main__':
-    filters = get_filters()
+    filters = parse_filters()
     with open('all_jsons/motherboarddb_mb_filters.json', 'w') as file:
         json.dump(filters, file, indent=4)
