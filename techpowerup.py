@@ -41,7 +41,7 @@ def get_labels_with_values(hardware_name: str):
         for sibling in label.next_siblings:
             if type(sibling) == Tag:
                 siblings.append(sibling.contents)
-        result.update({label.text: siblings})
+        result.update({label['for']: siblings})
     for property_name, options_list in result.items():
         temp = []
         for option in options_list[0]:

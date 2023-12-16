@@ -1,11 +1,11 @@
 {
-    "Manufacturer": [
+    "mfgr": [
         "All",
         "AMD",
         "Intel",
         "VIA"
     ],
-    "Release Date": [
+    "released": [
         "All",
         "2023",
         "2022",
@@ -34,17 +34,17 @@
         "1999",
         "1998"
     ],
-    "Mobile": [
+    "mobile": [
         "All",
         "No",
         "Yes"
     ],
-    "Server": [
+    "server": [
         "All",
         "No",
         "Yes"
     ],
-    "TDP": [
+    "tdp": [
         "All",
         "1 W",
         "2 W",
@@ -183,7 +183,7 @@
         "385 W",
         "400 W"
     ],
-    "Cores": [
+    "nCores": [
         "All",
         "1",
         "2",
@@ -221,7 +221,7 @@
         "112",
         "128"
     ],
-    "Threads": [
+    "nThreads": [
         "All",
         "1",
         "2",
@@ -264,7 +264,7 @@
         "272",
         "288"
     ],
-    "Generation": [
+    "generation": [
         "All",
         "Intel Atom",
         "Intel Atom x5",
@@ -374,7 +374,7 @@
         "VIA Nano L",
         "VIA C3"
     ],
-    "Socket": [
+    "socket": [
         "All",
         "",
         "AMD BGA SP4r2",
@@ -490,7 +490,7 @@
         "VIA Socket 2084",
         "VIA nanoBGA2"
     ],
-    "Codename": [
+    "codename": [
         "All",
         "Abu Dhabi",
         "Agena",
@@ -775,7 +775,7 @@
         "Zen",
         "Zosma"
     ],
-    "Process": [
+    "process": [
         "All",
         "4 nm",
         "5 nm",
@@ -796,12 +796,12 @@
         "180 nm",
         "unknown"
     ],
-    "Multiplier Unlocked": [
+    "multiUnlocked": [
         "All",
         "No",
         "Yes"
     ],
-    "Integrated Graphics": [
+    "igp": [
         "All",
         "No",
         "Yes"

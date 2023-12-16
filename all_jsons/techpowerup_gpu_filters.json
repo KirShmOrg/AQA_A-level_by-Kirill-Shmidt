@@ -1,5 +1,5 @@
 {
-    "Manufacturer": [
+    "mfgr": [
         "All",
         "3dfx",
         "AMD",
@@ -10,7 +10,7 @@
         "Sony",
         "XGI"
     ],
-    "Released": [
+    "released": [
         "All",
         "2024",
         "2023",
@@ -50,7 +50,7 @@
         "1987",
         "1986"
     ],
-    "DirectX": [
+    "directx": [
         "All",
         "1.0",
         "3.0",
@@ -74,22 +74,22 @@
         "12 Ultimate",
         "N/A"
     ],
-    "Mobile": [
+    "mobile": [
         "All",
         "No",
         "Yes"
     ],
-    "Workstation": [
+    "workstation": [
         "All",
         "No",
         "Yes"
     ],
-    "IGP": [
+    "igp": [
         "All",
         "No",
         "Yes"
     ],
-    "Generation": [
+    "generation": [
         "All",
         "MDA/CGA",
         "EGA",
@@ -326,7 +326,7 @@
         "Mining GPUs",
         "Console GPU"
     ],
-    "Architecture": [
+    "architecture": [
         "All",
         "Ada Lovelace",
         "Ampere",
@@ -409,7 +409,7 @@
         "XG4",
         "i740"
     ],
-    "Graphics Processor": [
+    "gpu": [
         "All",
         "16899-0",
         "18800-1",
@@ -926,7 +926,7 @@
         "Xenos Vejle",
         "Xenos Xenon"
     ],
-    "Shaders": [
+    "ushaders": [
         "All",
         "0",
         "8",
@@ -1012,6 +1012,7 @@
         "7424",
         "7680",
         "8192",
+        "8448",
         "8704",
         "8960",
         "9216",
@@ -1030,7 +1031,7 @@
         "18432",
         "20480"
     ],
-    "TMUs": [
+    "tmus": [
         "All",
         "0",
         "1",
@@ -1078,6 +1079,7 @@
         "232",
         "240",
         "256",
+        "264",
         "272",
         "280",
         "288",
@@ -1103,7 +1105,7 @@
         "1024",
         "1280"
     ],
-    "ROPs": [
+    "rops": [
         "All",
         "0",
         "1",
@@ -1135,7 +1137,7 @@
         "176",
         "192"
     ],
-    "Memory Type": [
+    "memtype": [
         "All",
         "SDR",
         "DDR",
@@ -1164,7 +1166,7 @@
         "HBM3",
         "DDR3L"
     ],
-    "Memory Size": [
+    "memsize": [
         "All",
         "System Shared",
         "1 MB",
@@ -1214,7 +1216,7 @@
         "128 GB",
         "192 GB"
     ],
-    "Memory Bus Width": [
+    "buswidth": [
         "All",
         "32 bit",
         "64 bit",
@@ -1238,7 +1240,7 @@
         "8192 bit",
         "System Shared"
     ],
-    "Bus Interface": [
+    "interface": [
         "All",
         "AGP 2x",
         "AGP 4x",
@@ -1278,7 +1280,7 @@
         "Ring Bus",
         "VLB"
     ],
-    "Slots": [
+    "slots": [
         "All",
         "Single-slot",
         "Dual-slot",
@@ -1290,7 +1292,7 @@
         "OAM Module",
         "SXM Module"
     ],
-    "Power Connectors": [
+    "powerplugs": [
         "All",
         "1x 12-pin",
         "1x 16-pin",
@@ -1310,7 +1312,7 @@
         "N/A",
         "None"
     ],
-    "TDP": [
+    "tdp": [
         "All",
         "2 W",
         "4 W",
@@ -1516,7 +1518,7 @@
         "2400 W",
         "unknown"
     ],
-    "Recommended Resolution": [
+    "performance": [
         "All",
         "N/A",
         "Below 480p",
@@ -1528,7 +1530,7 @@
         "1440p - WQHD",
         "2160p - 4K"
     ],
-    "Production Status": [
+    "eol": [
         "All",
         "Active",
         "End-of-life",
