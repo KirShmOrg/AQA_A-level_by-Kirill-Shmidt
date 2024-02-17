@@ -1,7 +1,7 @@
 from class_database import db
 
 TEST_CPU = db.get_cpu_list(params={"mfgr": 'AMD',
-                                   "released": '2015',
+                                   "released": '2022',
                                    "mobile": 'No',
                                    "server": 'No',
                                    "multiUnlocked": 'Yes'})[0]
@@ -13,13 +13,10 @@ TEST_MB = db.get_mb_list(params={'manufacturer': 'Asus',
 
 
 def check_sockets(motherboard: dict, cpu: dict) -> bool:
-    from motherboarddbcom import get_mb_socket
-    mb_socket = get_mb_socket(motherboard)
+    from component_classes.class_cpu import CPU
+    from component_classes.class_motherboard import Motherboard
 
-    from techpowerup import get_cpu_socket
-    cpu_socket = get_cpu_socket(cpu)
-
-    return cpu_socket == mb_socket
+    return Motherboard(motherboard).socket == CPU(cpu).socket
 
 
 if __name__ == '__main__':
