@@ -291,6 +291,7 @@
         "Extreme Graphics 2",
         "GMA Graphics-M",
         "HD Graphics-M",
+        "Arc Graphics-M",
         "HD Graphics-E",
         "GMA Graphics-T",
         "HD Graphics-T",
@@ -399,6 +400,7 @@
         "Voodoo Scalable",
         "Wonder",
         "XG4",
+        "Xe-LPG",
         "i740"
     ],
     "gpu": [
@@ -421,6 +423,7 @@
         "Antilles",
         "Apollo Lake GT1",
         "Apollo Lake GT1.5",
+        "Aqua Vanjaram",
         "Arctic Sound",
         "Arcturus",
         "Auburn",
@@ -667,7 +670,6 @@
         "M96",
         "M97",
         "M98",
-        "MI300",
         "MP-A4",
         "Mach32",
         "Mach64",
@@ -680,6 +682,7 @@
         "Mars",
         "Mendocino",
         "Meso",
+        "Meteor Lake GT1",
         "Montara",
         "Montevina",
         "NV1",
@@ -1019,6 +1022,7 @@
         "16896",
         "18176",
         "18432",
+        "19456",
         "20480"
     ],
     "tmus": [
@@ -1092,6 +1096,7 @@
         "880",
         "896",
         "1024",
+        "1216",
         "1280"
     ],
     "rops": [
@@ -1478,7 +1483,6 @@
         "320 W",
         "330 W",
         "335 W",
-        "340 W",
         "345 W",
         "350 W",
         "355 W",
@@ -1486,6 +1490,7 @@
         "375 W",
         "400 W",
         "405 W",
+        "425 W",
         "450 W",
         "475 W",
         "500 W",
@@ -1494,6 +1499,7 @@
         "600 W",
         "640 W",
         "700 W",
+        "750 W",
         "800 W",
         "900 W",
         "2400 W",

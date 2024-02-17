@@ -3,7 +3,6 @@
 
 
 class Database:
-
     def __init__(self):
         # from techpowerup import LINKS
         # from motherboarddbcom import BASE_URL as MB_BASE_URL
@@ -76,7 +75,7 @@ class Database:
     def get_mb_list(params: dict):
         from motherboarddbcom import parse_motherboards_list
         mb_list = parse_motherboards_list(params=params)
-        if 'error' in mb_list.keys():
+        if 'error' in mb_list:
             print(mb_list['error'])
             return
         else:
@@ -86,7 +85,7 @@ class Database:
 db = Database()
 
 if __name__ == '__main__':
-    db.update_filters('CPU', 'GPU')
+    db.update_filters('CPU', 'GPU', 'MB')
     cpu_list = db.get_cpu_list(params={"mfgr": 'AMD',
                                        "released": '2022',
                                        "mobile": 'No',

@@ -53,32 +53,46 @@ def parse_motherboards_list(params: dict):
 
     result = {}
     for page_number in range(get_number_of_pages()):
-        page = BeautifulSoup(requests.get(f"{BASE_URL}ajax/table/{query[0:-1]}{page_number}&dt=list").text, features="html.parser")
+        page = BeautifulSoup(requests.get(f"{BASE_URL}ajax/table/{query[0:-1]}{page_number}&dt=list").text,
+                             features="html.parser")
         names = [tag.text for tag in page.find_all('h4')]
         count = 0
         for ul in page.find_all('ul', attrs={'class': ['list-unstyled']}):
             if count // 2 == 0:
                 temp = []
-            for element in ul.contents:
-                if type(element) == Tag:
-                    temp.append(" ".join(element.text.strip().replace('\n', "").split()))
-            result.update({names[count//2]: temp})
+            else:
+                for element in ul.contents:
+                    if type(element) == Tag:
+                        temp.append(" ".join(element.text.strip().replace('\n', "").split()))
+            result.update({names[count // 2]: temp})
             count += 1
         time.sleep(1)
 
     for mb_name, properties in result.items():
-        temp = {}
+        specs = {}
         for _property in properties:
             column_index = _property.find(':')
             key = _property[0: column_index]
-            value = _property[column_index+1:]
+            value = _property[column_index + 1:]
             if value == '':
-                temp.update({key: None})
+                specs.update({key: None})
             else:
-                temp.update({key: value.strip()})
-        result.update({mb_name: temp})
+                specs.update({key: value.strip()})
+        result.update({mb_name: specs})
 
-    return result
+    final_result = []  # a bad, temporary solution
+    # TODO: refactor the code to just do those lines in the main part
+    for mb_name, specs in result.items():
+        temp = {}
+        temp.update({'Name': mb_name})
+        temp.update(specs)
+        final_result.append(temp)
+
+    return final_result
+
+
+def get_mb_socket(motherboard: dict) -> str:
+    return motherboard['Socket(s)'][3:]  # this is because the actual socket value is like "1x SOCKET_NAME"
 
 
 if __name__ == '__main__':

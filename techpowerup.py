@@ -116,6 +116,11 @@ def get_component_list(component_name: str,
     return {component_name.upper(): result}
 
 
+def get_cpu_socket(cpu: dict) -> str:
+    return cpu['Socket'][len('Socket '):]  # this is very error-prone
+    # TODO: make a proper socket class or sth
+
+
 if __name__ == '__main__':
     # cpu_filters = get_labels_with_values('CPU')
     # with open("all_jsons/techpowerup_cpu_filters.json", 'w') as file:
