@@ -12,7 +12,7 @@ BASE_URL = 'https://www.provantage.com/service/searchsvcs/B-CRAMM'
 
 
 class RAMManufacturer:
-    def __init__(self, human_name: str, js_name: str):
+    def __init__(self, human_name: str = None, js_name: str = None):
         self.__human_name = human_name
         self.__js_name = js_name
 
@@ -32,18 +32,33 @@ class RAMManufacturer:
         driver = Chrome()
         driver.get(BASE_URL)
         manufs_div = driver.find_element(by=By.ID, value="AT2001")
+        for_json = {}
         for manuf_a in manufs_div.find_elements(by=By.CSS_SELECTOR, value='a'):
             href = manuf_a.get_property('href')
             js_name = href[href.find('(') + 2:href.find(',') - 1]
             manufacturer_name = manuf_a.find_element(by=By.CLASS_NAME, value="choice").text
             manufacturer_name = manufacturer_name[0: manufacturer_name.index("(") - 1]
             manufacturer = RAMManufacturer(human_name=manufacturer_name, js_name=js_name)
+            for_json.update({manufacturer_name: js_name})
             all_manufacturers.append(manufacturer)
+
+        import json
+        filepath = "all_jsons/provantage_manufacturers.json"
+        with open(filepath, 'w') as file:
+            json.dump(for_json, file, indent=4)
+            file.truncate()
+            print(f"Updated '{filepath}'")
 
         return all_manufacturers
 
+    def __cmp__(self, other):
+        if not isinstance(other, RAMManufacturer):
+            raise TypeError("You can only compare within the RAMManufacturer class")
+        return self.js_name == other.js_name or self.human_name == other.human_name
+
     def __repr__(self) -> str:
         return f"RAMManufacturer <{self.__human_name}> access by <{self.js_name}>"
+
 
 class Filters:
     def __init__(self, with_update: bool = False):
@@ -52,11 +67,31 @@ class Filters:
         # implementation for now
         # TODO: redo this from a local file
 
-    def
 
-def generate_link(parameters: dict[str, str]):
-    link = BASE_URL
+def generate_link(parameters: dict[str, str]) -> str:
+    link = BASE_URL + "?"
     initial_parameters = {"category": "RAM modules"}
+
+    if "manufacturer" in parameters.keys():
+        manuf_to_find = parameters.pop('manufacturer')
+
+        import json
+        with open('all_jsons/provantage_manufacturers.json', 'r') as file:
+            manufacturers = json.load(file)
+
+        if manuf_to_find not in manufacturers:
+            raise ValueError(f"""The manufacturer '{manuf_to_find}' was not found on the website""")
+
+        link += f"MAN={manufacturers[manuf_to_find]}"
+
+    counter = 1
+    for key, value in parameters.items():
+        provantage_code = human_param_to_provantage_code(key)
+        html_param_value = value.replace(' ', '+')
+        link += f"&A{counter}={provantage_code}&V{counter}={html_param_value}"
+        counter += 1
+
+    return link
 
 
 def human_param_to_provantage_code(human_param: str) -> str:
@@ -67,9 +102,11 @@ def human_param_to_provantage_code(human_param: str) -> str:
         "Memory Speed": "311971",
         "Form Factor": "311506"
     }
-    if human_param in checkup_table.keys():
-        return checkup_table[human_param]
 
+    for name, code in checkup_table.items():
+        if human_param in name.lower():
+            return code
+    raise ValueError(f"Couldn't find parameter '{human_param}' ")
 
 
 def print_notes():
@@ -98,6 +135,20 @@ def aLinkCopy():  # Used heavily, from what it seems
     pass
 
 
+def test_generate_link() -> None:
+    test_params = {
+        "manufacturer": "Advantech-DLoG",
+        "size": "32 GB"
+    }
+    expected = f'{BASE_URL}?MAN=ADVN&A1=3113035&V1=32+GB'
+    result = generate_link(test_params)
+    if result != expected:
+        raise RuntimeError(f"function generate_link failed the test\nExpected {expected}\nGot {result}")
+    print("Test was passed")
+    print(f"{result = }")
+
+
 if __name__ == '__main__':
     print_notes()
-    print(RAMManufacturer.fetch_all())
+    # print(RAMManufacturer.fetch_all())
+    test_generate_link()
