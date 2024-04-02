@@ -12,6 +12,7 @@ class Database:
         self.cpu_filters_location = "all_jsons/techpowerup_cpu_filters.json"
         self.gpu_filters_location = "all_jsons/techpowerup_gpu_filters.json"
         self.mb_filters_location = "all_jsons/motherboarddb_mb_filters.json"
+        self.ram_filters_location = "all_jsons/provantage_ram_filters.json"
 
     def update_filters(self, *component_names):
         import json

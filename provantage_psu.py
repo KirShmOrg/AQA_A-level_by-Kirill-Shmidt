@@ -1,0 +1,1 @@
+LINK = 'https://www.provantage.com/service/searchsvcs/B-PPSUP?A1=31100&V1=Power+Supply'
