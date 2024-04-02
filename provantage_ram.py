@@ -51,7 +51,7 @@ class RAMManufacturer:
 
         return all_manufacturers
 
-    def __cmp__(self, other):
+    def __cmp__(self, other) -> bool:
         if not isinstance(other, RAMManufacturer):
             raise TypeError("You can only compare within the RAMManufacturer class")
         return self.js_name == other.js_name or self.human_name == other.human_name
@@ -97,9 +97,9 @@ def generate_link(parameters: dict[str, str]) -> str:
 def human_param_to_provantage_code(human_param: str) -> str:
     checkup_table = {
         "Product Type": "31100",
-        "Memory Size": "3113035",
-        "Memory Technology": "31113713",
-        "Memory Speed": "311971",
+        "Size": "3113035",
+        "Technology": "31113713",
+        "Speed": "311971",
         "Form Factor": "311506"
     }
 
@@ -109,7 +109,7 @@ def human_param_to_provantage_code(human_param: str) -> str:
     raise ValueError(f"Couldn't find parameter '{human_param}' ")
 
 
-def print_notes():
+def print_notes() -> None:
     human_to_provantage_ram_filter: dict[str, str] = {
         "size": "3113035",
         "ddr_type": "31113713",
@@ -119,7 +119,7 @@ def print_notes():
     }
 
 
-def aLinkMCCopy(t: str, b: str):
+def aLinkMCCopy(t: str, b: str) -> str:
     # function ALinkMC(t,b){var a='/service/searchsvcs/B-CRAMM?';if(b==2001)a+='MAN='+t;else a+='CAT='+t;window.location.href=a;}
     a = '/service/searchsvcs/B-CRAMM?'
     if b == '2001':
@@ -130,22 +130,22 @@ def aLinkMCCopy(t: str, b: str):
     return a
 
 
-def aLinkCopy():  # Used heavily, from what it seems
+def aLinkCopy() -> str:  # Used heavily, from what it seems
     # function ALink(t, b){var a = '/service/searchsvcs/B-CRAMM?A1=3113035&V1=8+GB';if (t == 'Various')t='Unclassified';t=t.replace( / ` / g, "'");t=t.replace( / ~ / g, '"');t=t.replace( / % / g, '%25');t=t.replace( / \+ / g, '%2B');a=a+'&A2='+b+'&V2='+t;a=a.replace( / / g, '+');window.location.href=a;}
     pass
 
 
 def test_generate_link() -> None:
-    test_params = {
+    test_cases = [[{
         "manufacturer": "Advantech-DLoG",
         "size": "32 GB"
-    }
-    expected = f'{BASE_URL}?MAN=ADVN&A1=3113035&V1=32+GB'
-    result = generate_link(test_params)
-    if result != expected:
-        raise RuntimeError(f"function generate_link failed the test\nExpected {expected}\nGot {result}")
-    print("Test was passed")
-    print(f"{result = }")
+    }, f'{BASE_URL}?MAN=ADVN&A1=3113035&V1=32+GB']]
+    for test_params, expected in test_cases:
+        result = generate_link(test_params)
+        if result != expected:
+            raise RuntimeError(f"function generate_link failed the test\nExpected {expected}\nGot {result}")
+        print("Test was passed")
+        print(f"{result = }")
 
 
 if __name__ == '__main__':
