@@ -14,7 +14,7 @@ class Database:
         self.mb_filters_location = "all_jsons/motherboarddb_mb_filters.json"
         self.ram_filters_location = "all_jsons/provantage_ram_filters.json"
 
-    def update_filters(self, *component_names):
+    def update_filters(self, *component_names) -> None:
         import json
         from techpowerup import get_labels_with_values as tpu_filters
         from motherboarddbcom import parse_filters as mbdb_filters
@@ -37,7 +37,7 @@ class Database:
             else:
                 print(f"Can't update {_filter}")
 
-    def get_filters(self, *component_names):
+    def get_filters(self, *component_names) -> list[dict]:
         import json
         result = []
         for component in component_names:
@@ -53,7 +53,7 @@ class Database:
         return result
 
     @staticmethod
-    def get_cpu_list(params: dict):
+    def get_cpu_list(params: dict) -> list[dict]:
         from techpowerup import get_component_list
         component_list = get_component_list('CPU', params=params, sort_by='name')
         if 'error' in component_list:
@@ -63,7 +63,7 @@ class Database:
             return component_list['CPU'][2:]
 
     @staticmethod
-    def get_gpu_list(params: dict):
+    def get_gpu_list(params: dict) -> list[dict]:
         from techpowerup import get_component_list
         component_list = get_component_list('GPU', params=params, sort_by='name')
         if 'error' in component_list:
@@ -73,7 +73,7 @@ class Database:
             return component_list['GPU'][2:]
 
     @staticmethod
-    def get_mb_list(params: dict):
+    def get_mb_list(params: dict) -> list[dict]:
         from motherboarddbcom import parse_motherboards_list
         mb_list = parse_motherboards_list(params=params)
         if 'error' in mb_list:
@@ -81,6 +81,10 @@ class Database:
             return
         else:
             return mb_list
+
+    @staticmethod
+    def get_ram_list(params: dict) -> list[dict]:
+        raise NotImplementedError("Yet to be done")
 
 
 db = Database()
