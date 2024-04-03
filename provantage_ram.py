@@ -12,9 +12,20 @@ BASE_URL = 'https://www.provantage.com/service/searchsvcs/B-CRAMM'
 
 
 class RAMManufacturer:
-    def __init__(self, human_name: str = None, js_name: str = None):
+    FILEPATH = "all_jsons/provantage_manufacturers.json"
+
+    def __init__(self, human_name: str = None, js_name: str = None, init_dict: dict[str, str] = None):
         self.__human_name = human_name
         self.__js_name = js_name
+        if human_name is not None and js_name is not None:
+            if init_dict is not None:
+                print(f"Since both the keywords and the dictionary was passed into __init__ of {self.__class__}, "
+                      f"only keywords will be used")
+            return
+
+        if len(init_dict) > 1:
+            raise ValueError("Variable 'init_dict' should be only 1 key and 1 value")
+        self.__human_name, self.js_name = init_dict
 
     @property
     def human_name(self) -> str:
@@ -24,32 +35,44 @@ class RAMManufacturer:
     def js_name(self) -> str:
         return self.__js_name
 
+
     @staticmethod
-    def fetch_all() -> list:
+    def fetch_all_as_dictionary(with_update: bool = False) -> dict[str, str]:
+        if not isinstance(with_update, bool):
+            raise TypeError(f"Variable 'with update' should be type bool, not {type(with_update)}")
+
         from selenium.webdriver import Chrome
         from selenium.webdriver.common.by import By
-        all_manufacturers = []
+
         driver = Chrome()
         driver.get(BASE_URL)
         manufs_div = driver.find_element(by=By.ID, value="AT2001")
-        for_json = {}
+
+        result_dictionary = {}
         for manuf_a in manufs_div.find_elements(by=By.CSS_SELECTOR, value='a'):
             href = manuf_a.get_property('href')
             js_name = href[href.find('(') + 2:href.find(',') - 1]
             manufacturer_name = manuf_a.find_element(by=By.CLASS_NAME, value="choice").text
             manufacturer_name = manufacturer_name[0: manufacturer_name.index("(") - 1]
-            manufacturer = RAMManufacturer(human_name=manufacturer_name, js_name=js_name)
-            for_json.update({manufacturer_name: js_name})
-            all_manufacturers.append(manufacturer)
+            result_dictionary.update({manufacturer_name: js_name})
 
-        import json
-        filepath = "all_jsons/provantage_manufacturers.json"
-        with open(filepath, 'w') as file:
-            json.dump(for_json, file, indent=4)
-            file.truncate()
-            print(f"Updated '{filepath}'")
+        if with_update is True:
+            import json
+            filepath = RAMManufacturer.FILEPATH
+            with open(filepath, 'w') as file:
+                json.dump(result_dictionary, file, indent=4)
+                file.truncate()
+                print(f"Updated '{filepath}'")
 
-        return all_manufacturers
+        return result_dictionary
+
+    @staticmethod
+    def fetch_all_as_objects(with_update: bool = False) -> list:
+        objects_list = []
+        all_manufacturers: dict[str, str] = RAMManufacturer.fetch_all_as_dictionary(with_update=with_update)
+        for human_name, js_name in all_manufacturers.items():
+            objects_list.append(RAMManufacturer(human_name=human_name, js_name=js_name))
+        return objects_list
 
     def __cmp__(self, other) -> bool:
         if not isinstance(other, RAMManufacturer):
@@ -60,23 +83,19 @@ class RAMManufacturer:
         return f"RAMManufacturer <{self.__human_name}> access by <{self.js_name}>"
 
 
-class Filters:
-    def __init__(self, with_update: bool = False):
-        if with_update:
-            raise NotImplementedError("Nah-uh, wait")
-        # implementation for now
-        # TODO: redo this from a local file
-
-
 def generate_link(parameters: dict[str, str]) -> str:
+    import os
+    current_dir = os.path.dirname(__file__)
+    manufacturers_filename = os.path.join(current_dir, 'all_jsons/provantage_manufacturers.json')
+    
     link = BASE_URL + "?"
-    initial_parameters = {"category": "RAM modules"}
+    initial_parameters = {"category": "RAM Module"}
 
     if "manufacturer" in parameters.keys():
         manuf_to_find = parameters.pop('manufacturer')
 
         import json
-        with open('all_jsons/provantage_manufacturers.json', 'r') as file:
+        with open(manufacturers_filename, 'r') as file:
             manufacturers = json.load(file)
 
         if manuf_to_find not in manufacturers:
@@ -85,6 +104,7 @@ def generate_link(parameters: dict[str, str]) -> str:
         link += f"MAN={manufacturers[manuf_to_find]}"
 
     counter = 1
+    parameters.update(initial_parameters)
     for key, value in parameters.items():
         provantage_code = human_param_to_provantage_code(key)
         html_param_value = value.replace(' ', '+')
@@ -95,10 +115,11 @@ def generate_link(parameters: dict[str, str]) -> str:
 
 
 def human_param_to_provantage_code(human_param: str) -> str:
+    # NOTE: !!MAKE SURE that the words within the keys are not substrings of other keys!!
     checkup_table = {
-        "Product Type": "31100",
-        "Size": "3113035",
-        "Technology": "31113713",
+        "Product Type | Category": "31100",
+        "Size | Capacity": "3113035",
+        "Technology | DDR_type": "31113713",
         "Speed": "311971",
         "Form Factor": "311506"
     }
@@ -107,16 +128,6 @@ def human_param_to_provantage_code(human_param: str) -> str:
         if human_param in name.lower():
             return code
     raise ValueError(f"Couldn't find parameter '{human_param}' ")
-
-
-def print_notes() -> None:
-    human_to_provantage_ram_filter: dict[str, str] = {
-        "size": "3113035",
-        "ddr_type": "31113713",
-        "speed": "311971",
-        "form_factor": "311506",
-        "": ""
-    }
 
 
 def aLinkMCCopy(t: str, b: str) -> str:
@@ -135,20 +146,5 @@ def aLinkCopy() -> str:  # Used heavily, from what it seems
     pass
 
 
-def test_generate_link() -> None:
-    test_cases = [[{
-        "manufacturer": "Advantech-DLoG",
-        "size": "32 GB"
-    }, f'{BASE_URL}?MAN=ADVN&A1=3113035&V1=32+GB']]
-    for test_params, expected in test_cases:
-        result = generate_link(test_params)
-        if result != expected:
-            raise RuntimeError(f"function generate_link failed the test\nExpected {expected}\nGot {result}")
-        print("Test was passed")
-        print(f"{result = }")
-
-
 if __name__ == '__main__':
-    print_notes()
-    # print(RAMManufacturer.fetch_all())
-    test_generate_link()
+    print(RAMManufacturer.fetch_all_as_dictionary())
