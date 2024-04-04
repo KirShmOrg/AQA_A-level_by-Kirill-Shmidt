@@ -97,12 +97,14 @@ def get_mb_socket(motherboard: dict) -> str:
 
 if __name__ == '__main__':
     mb_list = parse_motherboards_list(params={'manufacturer': 'Asus',
-                                              # 'form_factor': 'Micro-ATX',
+                                              'form_factor': 'Micro-ATX',
                                               'socket': 'AM4',
-                                              # 'chipset': 'AMD B450',
+                                              'chipset': 'AMD B450',
                                               })
-    if 'error' in mb_list.keys():
-        print(mb_list['error'])
-    else:
-        print(f'{len(mb_list)} motherboards parsed')
-        print(mb_list)
+    # if 'error' in mb_list.keys():
+    #     print(mb_list['error'])
+    # else:
+    # NOTE: That's an AWFUL way to do that, please don't
+    # Honestly, just f*** this error handling -- crash the program if sth goes wrong and that's it. good enough
+    print(f'{len(mb_list)} motherboards parsed')
+    print(mb_list)
