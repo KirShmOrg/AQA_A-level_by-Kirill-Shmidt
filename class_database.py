@@ -9,10 +9,17 @@ class Database:
         # self.cpu_link = LINKS['CPU']
         # self.gpu_link = LINKS['GPU']
         # self.mb_link = MB_BASE_URL
-        self.cpu_filters_location = "all_jsons/techpowerup_cpu_filters.json"
-        self.gpu_filters_location = "all_jsons/techpowerup_gpu_filters.json"
-        self.mb_filters_location = "all_jsons/motherboarddb_mb_filters.json"
-        self.ram_filters_location = "all_jsons/provantage_ram_filters.json"
+        self.cpu_filters_location = self.get_full_filepath("all_jsons/techpowerup_cpu_filters.json")
+        self.gpu_filters_location = self.get_full_filepath("all_jsons/techpowerup_gpu_filters.json")
+        self.mb_filters_location = self.get_full_filepath("all_jsons/motherboarddb_mb_filters.json")
+        self.ram_filters_location = self.get_full_filepath("all_jsons/provantage_ram_filters.json")
+
+
+    @staticmethod
+    def get_full_filepath(destination_path: str):
+        import os
+        current_dir = os.path.dirname(__file__)
+        return os.path.join(current_dir, destination_path)
 
     def update_filters(self, *component_names) -> None:
         import json

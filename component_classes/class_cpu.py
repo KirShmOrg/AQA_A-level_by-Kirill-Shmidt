@@ -16,6 +16,7 @@ class CPU:
     l3_cache_mb: int = field(init=False, repr=False)
     tdp_w: int = field(init=False)
     date_of_release: datetime.date = field(init=False, repr=False)
+    exists: bool = field(init=False, repr=False, default=True)
 
     def __post_init__(self):
         from techpowerup import get_cpu_socket
@@ -125,8 +126,13 @@ class CPU:
         check: list[str] = self.split_key_with_checks('Released')
         if check is None:
             self.date_of_release = date(1, 1, 1)
-        if len(check) != 3:
+            return
+        elif " ".join(check).lower() == 'never released':
+            self.exists = False
+            return
+        elif len(check) != 3:
             raise ValueError(f"The date should be 3 words, not {check} with len {len(check)}")
+
         self.date_of_release = date(year=int(check[-1].strip()), month=month_str_to_int(check[0]), day=1)
         return
 

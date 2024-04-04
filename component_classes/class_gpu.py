@@ -26,6 +26,7 @@ class GraphicalMemory:
     width_bits: int = field(init=False)
 
     def __post_init__(self):
+        # TODO: handle empty string
         temp_list: list[str] = self.init_string.split(', ')
         if len(temp_list) != 3:
             raise IndexError(f"memory should contain 3 words, not {len(temp_list)}: {temp_list}")
@@ -37,6 +38,18 @@ class GraphicalMemory:
         # should I delete that?
         del self.init_string
 
+@dataclass
+class GPU_cores:
+    init_string: str = field(repr=False)
+
+    shaders: int = field(init=False)
+    tmus: int = field(init=False)
+    rops: int = field(init=False)
+
+    def __post_init__(self):
+        temp_list: list[str] = self.init_string.split(' / ')
+        if len(temp_list) != 3:
+            raise IndexError("")
 
 @dataclass
 class GPU:
@@ -63,4 +76,4 @@ if __name__ == '__main__':
                 'Memory': '6 GB, GDDR6, 96 bit', 'GPU clock': '2505 MHz', 'Memory clock': '2250 MHz',
                 'Shaders / TMUs / ROPs': '2560 / 80 / 32'}
     TEST_GPU = GPU(TEST_GPU)
-    print(GPU)
+    print(TEST_GPU)

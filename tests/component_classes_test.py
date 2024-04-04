@@ -30,6 +30,7 @@ def test_GPU_class() -> None:
     for case in test_cases:
         i_GPU = GPU(case)
         print(i_GPU)
+        print(i_GPU.all_specs, '\n')
 
 
 def run_all_tests() -> None:
