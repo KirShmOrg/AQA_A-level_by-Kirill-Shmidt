@@ -1,8 +1,12 @@
+import time
+
 import requests
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 import json
+
 from class_database import db
+from custom_request import request_get_v2
 
 LINKS = {'CPU': "https://www.techpowerup.com/cpu-specs/", "GPU": "https://www.techpowerup.com/gpu-specs/"}
 
@@ -16,7 +20,7 @@ def parse_labels(website_link: str):
                     labels.pop(labels.index(label))
 
     labels = []
-    main_page = BeautifulSoup(requests.get(website_link).content, features='html.parser')
+    main_page = BeautifulSoup(request_get_v2(website_link).content, features='html.parser')
     for fieldset in main_page.find_all('fieldset'):
         if 'filters' in fieldset['class']:
             labels = fieldset.find_all_next('label')
@@ -92,7 +96,7 @@ def get_component_list(component_name: str,
         query += f'sort={sort_by}'
     else:
         query = ""
-    response = requests.get(f"{LINKS[component_name]}{query}")
+    response = request_get_v2(f"{LINKS[component_name]}{query}")
     page = BeautifulSoup(response.text, features='html.parser')
 
     table = page.find('div', id="list").find('table')
@@ -124,37 +128,20 @@ def get_cpu_socket(cpu: dict) -> str:
     return cpu['Socket'][len('Socket '):]  # this is very error-prone
     # TODO: make a proper socket class or sth
 
+def get_gpu_tdp(gpu_link: str, error_count: int = 0) -> int:
+    response = request_get_v2(gpu_link)
+
+    if response.status_code != 200:
+        error_count += 1
+        print(f"The response code was {response.status_code}")
+        time.sleep(5*error_count)
+        return get_gpu_tdp(gpu_link, error_count)
+
+    page = BeautifulSoup(response.text, features='html.parser')
+    return int(page.find('dt', string='TDP').parent.find('dd').text.split()[0])
+
+
+
 
 if __name__ == '__main__':
-    # cpu_filters = get_labels_with_values('CPU')
-    # with open("all_jsons/techpowerup_cpu_filters.json", 'w') as file:
-    #     json.dump(cpu_filters, file, indent=4)
-    #
-    # gpu_filters = get_labels_with_values('GPU')
-    # with open("all_jsons/techpowerup_gpu_filters.json", 'w') as file:
-    #     json.dump(gpu_filters, file, indent=4)
-    cpu_list = get_component_list('CPU', params={"mfgr": 'AMD',
-                                                 "released": '2022',
-                                                 "mobile": 'No',
-                                                 "server": 'No',
-                                                 "multiUnlocked": 'Yes'})
-    if 'error' in cpu_list.keys():
-        print(cpu_list['error'])
-    else:
-        cpu_list = cpu_list['CPU'][2:]
-        print(f'\nParsed {len(cpu_list)} CPUs\n')
-        for i in cpu_list:
-            print(i)
-
-    gpu_list = get_component_list('GPU', params={'mfgr': 'NVIDIA',
-                                                 'released': '2023',
-                                                 'mobile': 'No',
-                                                 'workstation': 'No',
-                                                 'performance': '1080'})
-    if 'error' in gpu_list.keys():
-        print(gpu_list['error'])
-    else:
-        gpu_list = gpu_list['GPU'][2:]
-        print(f"\nParsed {len(gpu_list)} GPUs\n")
-        for i in gpu_list:
-            print(i)
+    print(get_gpu_tdp('https://www.techpowerup.com/gpu-specs/radeon-rx-7600-xt.c4190'))

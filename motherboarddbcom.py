@@ -1,17 +1,18 @@
 import json
 import time
 
-import requests
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 from class_database import db
+
+from custom_request import request_get_v2
 
 BASE_URL = "https://motherboarddb.com/motherboards"
 
 
 def parse_filters():
     result = {}
-    response = requests.get(f"{BASE_URL}")
+    response = request_get_v2(f"{BASE_URL}")
     page = BeautifulSoup(response.text, features="html.parser")
     selects_list = page.find_all("select", {'class': ["select2-widget", "form-control"]})
     for select in selects_list:
@@ -25,7 +26,7 @@ def parse_filters():
 
 
 def horse_around():
-    response = requests.get(f"{BASE_URL}/ajax/table/?dt=table&page=1")
+    response = request_get_v2(f"{BASE_URL}/ajax/table/?dt=table&page=1")
     page = BeautifulSoup(response.text)
     print(page.prettify())
 
@@ -48,12 +49,12 @@ def parse_motherboards_list(params: dict):
     for filter_name, value in params.items():
         query += f'{filter_name}={allowed_filters[filter_name][value]}&'
     query += 'page=1'
-    response = requests.get(f"{BASE_URL}/ajax/table/{query}")
+    response = request_get_v2(f"{BASE_URL}/ajax/table/{query}")
     page = BeautifulSoup(response.text, features="html.parser")
 
     result = {}
     for page_number in range(get_number_of_pages()):
-        page = BeautifulSoup(requests.get(f"{BASE_URL}/ajax/table/{query[0:-1]}{page_number}&dt=list").text,
+        page = BeautifulSoup(request_get_v2(f"{BASE_URL}/ajax/table/{query[0:-1]}{page_number}&dt=list").text,
                              features="html.parser")
         names = [tag.text for tag in page.find_all('h4')]
         links = [tag.parent.attrs['href'] for tag in page.find_all('h4')]

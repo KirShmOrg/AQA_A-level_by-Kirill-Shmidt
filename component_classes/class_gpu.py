@@ -1,4 +1,5 @@
 import datetime
+import time
 from dataclasses import dataclass, field
 
 
@@ -80,7 +81,8 @@ class GPU:
         self.convert_release_year()
         self.pci_e = PCIe(self.all_specs['Bus'])
         self.cores = GCores(self.all_specs['Shaders / TMUs / ROPs'])
-        self.further_link = self.all_specs.get('Link', '')
+        self.__tdp = None
+        self.further_link = f"https://www.techpowerup.com{self.all_specs.get('Link', '')}"
 
     def convert_release_year(self) -> None:
         if self.all_specs['Released'] in ['Unknown', 'N/A', None, 'None']:
@@ -91,6 +93,16 @@ class GPU:
             self.release_year = -1
             return
         self.release_year = int(self.all_specs['Released'].split()[-1])
+
+    def __fetch_tdp(self) -> int:
+        time.sleep(3)  # it is bad, but we have to respect the server
+        from techpowerup import get_gpu_tdp
+        return get_gpu_tdp(self.further_link)
+    @property
+    def tdp(self) -> int:
+        if self.__tdp is None:
+            self.__tdp = self.__fetch_tdp()  # TODO: remove an infinite loop if fetch returns None
+        return self.__tdp
 
 
 

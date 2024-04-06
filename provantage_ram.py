@@ -1,10 +1,6 @@
-# import time
-
-from bs4 import BeautifulSoup
 from bs4.element import Tag
-import requests
 
-# from component_classes.class_ram import RAM
+from custom_request import request_get_v2
 
 # The general logic of filters: An: key n, Vn: value n (e.g. A1 V1)
 
@@ -130,9 +126,8 @@ def human_param_to_provantage_code(human_param: str) -> str:
 
 
 def get_ram_list(params: dict, as_objects: bool = False) -> list:
-    from requests import get
     link = generate_link(params)
-    response = get(link)
+    response = request_get_v2(link)
     if response.status_code != 200:
         raise ConnectionError(f"The status is incorrect: {response.status_code}")
 
@@ -146,7 +141,6 @@ def get_ram_list(params: dict, as_objects: bool = False) -> list:
         human_name = product_a.parent.text
         further_link: str = product_a.attrs['href']
         temp_text = f"{text_div.text} - Name: {human_name} - Link: {further_link}"
-        # temp_text = text_div.text + f' - {further_link}'
         temp_list = temp_text[temp_text.find('RAM Modules')::].split(' - ')
         result_ram_list.append(temp_list)
 
