@@ -1,6 +1,8 @@
 from bs4.element import Tag
+import json
 
 from custom_request import request_get_v2
+
 
 # The general logic of filters: An: key n, Vn: value n (e.g. A1 V1)
 
@@ -52,7 +54,6 @@ class RAMManufacturer:
             result_dictionary.update({manufacturer_name: js_name})
 
         if with_update is True:
-            import json
             filepath = RAMManufacturer.FILEPATH
             with open(filepath, 'w') as file:
                 json.dump(result_dictionary, file, indent=4)
@@ -80,6 +81,7 @@ class RAMManufacturer:
 
 def generate_link(parameters: dict[str, str]) -> str:
     import os
+
     current_dir = os.path.dirname(__file__)
     manufacturers_filename = os.path.join(current_dir, 'all_jsons/provantage_manufacturers.json')
 
@@ -88,8 +90,6 @@ def generate_link(parameters: dict[str, str]) -> str:
 
     if "manufacturer" in parameters.keys():
         manuf_to_find = parameters.pop('manufacturer')
-
-        import json
         with open(manufacturers_filename, 'r') as file:
             manufacturers = json.load(file)
 
@@ -132,6 +132,7 @@ def get_ram_list(params: dict, as_objects: bool = False) -> list:
         raise ConnectionError(f"The status is incorrect: {response.status_code}")
 
     from bs4 import BeautifulSoup
+
     page = BeautifulSoup(response.text, features='html.parser')
     main_div = page.find(id='MAIN').find_all('table', attrs={'class': 'BOX2'})[2].next.next.next.next
 
@@ -146,6 +147,7 @@ def get_ram_list(params: dict, as_objects: bool = False) -> list:
 
     if as_objects is True:
         from component_classes.class_ram import RAM
+
         return [RAM(ram) for ram in result_ram_list]
 
     return result_ram_list

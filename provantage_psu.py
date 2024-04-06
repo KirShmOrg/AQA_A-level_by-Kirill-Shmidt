@@ -1,1 +1,9 @@
-LINK = 'https://www.provantage.com/service/searchsvcs/B-PPSUP?A1=31100&V1=Power+Supply'
+from bs4 import BeautifulSoup
+
+from custom_request import request_get_v2
+
+LINK = 'https://www.provantage.com/service/searchsvcs/B-PPSUP'
+
+def get_psu_list() -> list[str]:
+    pass
+

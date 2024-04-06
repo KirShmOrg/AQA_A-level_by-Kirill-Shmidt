@@ -1,4 +1,5 @@
 import time
+import json
 
 from component_classes.class_ram import RAM
 from component_classes.class_cpu import CPU
@@ -8,26 +9,34 @@ from component_classes.class_motherboard import Motherboard
 
 class Database:
     def __init__(self):
-        # from techpowerup import LINKS
-        # from motherboarddbcom import BASE_URL as MB_BASE_URL
-        # self.cpu_link = LINKS['CPU']
-        # self.gpu_link = LINKS['GPU']
-        # self.mb_link = MB_BASE_URL
         self.cpu_filters_location = self.__get_full_filepath("all_jsons/techpowerup_cpu_filters.json")
         self.gpu_filters_location = self.__get_full_filepath("all_jsons/techpowerup_gpu_filters.json")
         self.mb_filters_location = self.__get_full_filepath("all_jsons/motherboarddb_mb_filters.json")
-        self.ram_filters_location = self.__get_full_filepath("all_jsons/provantage_ram_filters.json")
+        self.provantage_manufacturers_location = self.__get_full_filepath("all_jsons/provantage_manufacturers.json")
 
     @staticmethod
     def __get_full_filepath(destination_path: str):
         import os
+
         current_dir = os.path.dirname(__file__)
         return os.path.join(current_dir, destination_path)
 
-    def update_filters(self, *component_names) -> None:
+    @staticmethod
+    def __update_provantage_manufacturers() -> None:
+        from provantage import get_all_manufacturers
+
+        for_update = get_all_manufacturers()
         import json
+        import os
+
+        with open(os.path.join(os.path.dirname(__file__), 'all_jsons/provantage_manufacturers.json'), 'w') as file:
+            json.dump(for_update, file, indent=4)
+        print("Updated all manufacturers")
+
+    def update_filters(self, *component_names) -> None:
         from techpowerup import get_labels_with_values as tpu_filters
         from motherboarddbcom import parse_filters as mbdb_filters
+
         for _filter in component_names:
             if _filter.upper() == 'CPU':
                 cpu_filters = tpu_filters('CPU')
@@ -44,12 +53,13 @@ class Database:
                 with open(self.mb_filters_location, 'w') as file:
                     json.dump(mb_filters, file, indent=4)
                 del mb_filters
+            elif _filter.upper() == 'RAM':
+                self.__update_provantage_manufacturers()
             else:
                 print(f"Can't update filter {_filter}")
 
     def get_filters(self, *component_names) -> list[dict]:
-        import json
-        result = []
+        result = []  # TODO: refactor it to a dictionary
         for component in component_names:
             if component.upper() == 'CPU':
                 with open(self.cpu_filters_location, 'r') as file:
@@ -62,9 +72,14 @@ class Database:
                     result.append(json.load(file))
         return result
 
+    def get_all_provantage_manufacturers(self) -> dict[dict[str, str]]:
+        with open(self.provantage_manufacturers_location, 'r') as file:
+            return json.load(file)
+
     @staticmethod
     def get_cpu_list(params: dict) -> list[CPU]:
         from techpowerup import get_component_list
+
         component_list = get_component_list('CPU', params=params, sort_by='name')
         if 'error' in component_list:
             print(component_list['error'])
@@ -75,6 +90,7 @@ class Database:
     @staticmethod
     def get_gpu_list(params: dict) -> list[GPU]:
         from techpowerup import get_component_list
+
         component_list = get_component_list('GPU', params=params, sort_by='name')
         if 'error' in component_list:
             print(component_list['error'])
@@ -85,6 +101,7 @@ class Database:
     @staticmethod
     def get_mb_list(params: dict) -> list[Motherboard]:
         from motherboarddbcom import parse_motherboards_list
+
         mb_list = parse_motherboards_list(params=params)
         if 'error' in mb_list:
             print(mb_list['error'])
@@ -95,6 +112,7 @@ class Database:
     @staticmethod
     def get_ram_list(params: dict) -> list[RAM]:
         from provantage_ram import get_ram_list
+
         return get_ram_list(params, as_objects=True)
 
 
