@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 class RAM:
     init_list: list[str] = field(repr=False)
 
+    # TODO: add a name, lol
     ddr_gen: int = field(init=False, default=0)
     cl_timing: int = field(init=False, default=0)
     size_gb: int = field(init=False, default=0)

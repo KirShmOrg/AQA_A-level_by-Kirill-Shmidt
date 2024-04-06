@@ -42,7 +42,7 @@ class GMem:
 
 
 @dataclass
-class GPU_cores:
+class GCores:
     init_string: str = field(repr=False)
 
     shaders: int = field(init=False)
@@ -64,19 +64,31 @@ class GPU:
     # for all fields where repr=True it should be switched to False after testing
     gpu_chip: str = field(init=False, repr=False)
     speed_str: str = field(init=False, repr=False)
-    release_date: str = field(init=False, repr=False)
+    release_year: int = field(init=False, repr=False)
     pci_e: PCIe = field(init=False)
     memory: GMem = field(init=False)
-    cores: GPU_cores = field(init=False)
+    cores: GCores = field(init=False)
+    exists: bool = field(init=False, repr=False, default=True)
 
     def __post_init__(self):
         self.memory = GMem(f"{self.all_specs['Memory']}, {self.all_specs['Memory clock']}")
         self.human_name = self.all_specs['Product Name']
         self.gpu_chip = self.all_specs['GPU Chip']
         self.speed_str = self.all_specs['GPU clock']
-        self.release_date = self.all_specs['Released']
+        self.convert_release_year()
         self.pci_e = PCIe(self.all_specs['Bus'])
-        self.cores = GPU_cores(self.all_specs['Shaders / TMUs / ROPs'])
+        self.cores = GCores(self.all_specs['Shaders / TMUs / ROPs'])
+
+    def convert_release_year(self) -> None:
+        if self.all_specs['Released'] in ['Unknown', 'N/A', None, 'None']:
+            self.release_year = 0
+            return
+        elif self.all_specs['Released'] == 'Never Released':
+            self.exists = False
+            self.release_year = -1
+            return
+        self.release_year = int(self.all_specs['Released'].split()[-1])
+
 
 
 if __name__ == '__main__':

@@ -83,14 +83,14 @@ class Database:
             return [GPU(gpu) for gpu in component_list['GPU'][2:]]
 
     @staticmethod
-    def get_mb_list(params: dict) -> list[dict]:
+    def get_mb_list(params: dict) -> list[Motherboard]:
         from motherboarddbcom import parse_motherboards_list
         mb_list = parse_motherboards_list(params=params)
         if 'error' in mb_list:
             print(mb_list['error'])
             return
         else:
-            return mb_list
+            return [Motherboard(mb) for mb in mb_list]
 
     @staticmethod
     def get_ram_list(params: dict) -> list[RAM]:
@@ -99,43 +99,3 @@ class Database:
 
 
 db = Database()
-
-if __name__ == '__main__':
-    db.update_filters('CPU', 'GPU', 'MB', 'RAM')
-    cpu_list = db.get_cpu_list(params={"mfgr": 'AMD',
-                                       "released": '2022',
-                                       "mobile": 'No',
-                                       "server": 'No',
-                                       "multiUnlocked": 'Yes'})
-    for cpu in cpu_list:
-        print(cpu)
-    print("--" * 15)
-    time.sleep(1)
-
-    gpu_list = db.get_gpu_list(params={'mfgr': 'NVIDIA',
-                                       'released': '2023',
-                                       'mobile': 'No',
-                                       'workstation': 'No',
-                                       'performance': '1080'})
-    for gpu in gpu_list:
-        print(gpu)
-    print('--' * 15)
-    time.sleep(1)
-
-    mb_list = db.get_mb_list(params={'manufacturer': 'Asus',
-                                     'form_factor': 'Micro-ATX',
-                                     'socket': 'AM4',
-                                     'chipset': 'AMD B450',
-                                     })
-    for mb in mb_list:
-        print(mb)
-    print('--' * 15)
-    time.sleep(1)
-
-    ram_list = db.get_ram_list({
-        'manufacturer': 'Samsung',
-        'size': '8 GB',
-        'ddr_type': 'DDR4 SDRAM'
-    })
-    for ram in ram_list:
-        print(ram)
