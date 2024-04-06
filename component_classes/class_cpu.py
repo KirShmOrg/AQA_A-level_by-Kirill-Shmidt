@@ -8,9 +8,9 @@ class CPU:
 
     human_name: str = field(init=False)
     codename: str = field(init=False, repr=False)
-    cores: int = field(init=False)
+    cores: int = field(init=False, repr=False)
     threads: int = field(init=False)
-    clock_speed_range_GHz: dict[str, float] = field(init=False)
+    clock_speed_range_GHz: dict[str, float] = field(init=False, repr=False)
     socket: str = field(init=False)
     process_size_nm: int = field(init=False, repr=False)
     l3_cache_mb: int = field(init=False, repr=False)

@@ -1,5 +1,9 @@
-# import techpowerup
-# import motherboarddbcom
+import time
+
+from component_classes.class_ram import RAM
+from component_classes.class_cpu import CPU
+from component_classes.class_gpu import GPU
+from component_classes.class_motherboard import Motherboard
 
 
 class Database:
@@ -9,14 +13,13 @@ class Database:
         # self.cpu_link = LINKS['CPU']
         # self.gpu_link = LINKS['GPU']
         # self.mb_link = MB_BASE_URL
-        self.cpu_filters_location = self.get_full_filepath("all_jsons/techpowerup_cpu_filters.json")
-        self.gpu_filters_location = self.get_full_filepath("all_jsons/techpowerup_gpu_filters.json")
-        self.mb_filters_location = self.get_full_filepath("all_jsons/motherboarddb_mb_filters.json")
-        self.ram_filters_location = self.get_full_filepath("all_jsons/provantage_ram_filters.json")
-
+        self.cpu_filters_location = self.__get_full_filepath("all_jsons/techpowerup_cpu_filters.json")
+        self.gpu_filters_location = self.__get_full_filepath("all_jsons/techpowerup_gpu_filters.json")
+        self.mb_filters_location = self.__get_full_filepath("all_jsons/motherboarddb_mb_filters.json")
+        self.ram_filters_location = self.__get_full_filepath("all_jsons/provantage_ram_filters.json")
 
     @staticmethod
-    def get_full_filepath(destination_path: str):
+    def __get_full_filepath(destination_path: str):
         import os
         current_dir = os.path.dirname(__file__)
         return os.path.join(current_dir, destination_path)
@@ -42,7 +45,7 @@ class Database:
                     json.dump(mb_filters, file, indent=4)
                 del mb_filters
             else:
-                print(f"Can't update {_filter}")
+                print(f"Can't update filter {_filter}")
 
     def get_filters(self, *component_names) -> list[dict]:
         import json
@@ -60,24 +63,24 @@ class Database:
         return result
 
     @staticmethod
-    def get_cpu_list(params: dict) -> list[dict]:
+    def get_cpu_list(params: dict) -> list[CPU]:
         from techpowerup import get_component_list
         component_list = get_component_list('CPU', params=params, sort_by='name')
         if 'error' in component_list:
             print(component_list['error'])
             return
         else:
-            return component_list['CPU'][2:]
+            return [CPU(cpu) for cpu in component_list['CPU'][2:]]
 
     @staticmethod
-    def get_gpu_list(params: dict) -> list[dict]:
+    def get_gpu_list(params: dict) -> list[GPU]:
         from techpowerup import get_component_list
         component_list = get_component_list('GPU', params=params, sort_by='name')
         if 'error' in component_list:
             print(component_list['error'])
             return
         else:
-            return component_list['GPU'][2:]
+            return [GPU(gpu) for gpu in component_list['GPU'][2:]]
 
     @staticmethod
     def get_mb_list(params: dict) -> list[dict]:
@@ -90,29 +93,49 @@ class Database:
             return mb_list
 
     @staticmethod
-    def get_ram_list(params: dict) -> list[dict]:
-        raise NotImplementedError("Yet to be done")
+    def get_ram_list(params: dict) -> list[RAM]:
+        from provantage_ram import get_ram_list
+        return get_ram_list(params, as_objects=True)
 
 
 db = Database()
 
 if __name__ == '__main__':
-    db.update_filters('CPU', 'GPU', 'MB')
+    db.update_filters('CPU', 'GPU', 'MB', 'RAM')
     cpu_list = db.get_cpu_list(params={"mfgr": 'AMD',
                                        "released": '2022',
                                        "mobile": 'No',
                                        "server": 'No',
                                        "multiUnlocked": 'Yes'})
+    for cpu in cpu_list:
+        print(cpu)
+    print("--" * 15)
+    time.sleep(1)
+
     gpu_list = db.get_gpu_list(params={'mfgr': 'NVIDIA',
                                        'released': '2023',
                                        'mobile': 'No',
                                        'workstation': 'No',
                                        'performance': '1080'})
-    print(cpu_list)
-    print(gpu_list)
+    for gpu in gpu_list:
+        print(gpu)
+    print('--' * 15)
+    time.sleep(1)
+
     mb_list = db.get_mb_list(params={'manufacturer': 'Asus',
                                      'form_factor': 'Micro-ATX',
                                      'socket': 'AM4',
                                      'chipset': 'AMD B450',
                                      })
-    print(mb_list)
+    for mb in mb_list:
+        print(mb)
+    print('--' * 15)
+    time.sleep(1)
+
+    ram_list = db.get_ram_list({
+        'manufacturer': 'Samsung',
+        'size': '8 GB',
+        'ddr_type': 'DDR4 SDRAM'
+    })
+    for ram in ram_list:
+        print(ram)

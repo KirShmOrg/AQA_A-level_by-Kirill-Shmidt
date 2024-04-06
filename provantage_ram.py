@@ -25,7 +25,7 @@ class RAMManufacturer:
 
         if len(init_dict) > 1:
             raise ValueError("Variable 'init_dict' should be only 1 key and 1 value")
-        self.__human_name, self.js_name = init_dict
+        self.__human_name, self.__js_name = init_dict
 
     @property
     def human_name(self) -> str:
@@ -34,7 +34,6 @@ class RAMManufacturer:
     @property
     def js_name(self) -> str:
         return self.__js_name
-
 
     @staticmethod
     def fetch_all_as_dictionary(with_update: bool = False) -> dict[str, str]:
@@ -87,7 +86,7 @@ def generate_link(parameters: dict[str, str]) -> str:
     import os
     current_dir = os.path.dirname(__file__)
     manufacturers_filename = os.path.join(current_dir, 'all_jsons/provantage_manufacturers.json')
-    
+
     link = BASE_URL + "?"
     initial_parameters = {"category": "RAM Module"}
 
@@ -125,9 +124,34 @@ def human_param_to_provantage_code(human_param: str) -> str:
     }
 
     for name, code in checkup_table.items():
-        if human_param in name.lower():
+        if human_param.lower() in name.lower():
             return code
     raise ValueError(f"Couldn't find parameter '{human_param}' ")
+
+
+def get_ram_list(params: dict, as_objects: bool = False) -> list:
+    from requests import get
+    link = generate_link(params)
+    response = get(link)
+    if response.status_code != 200:
+        raise ConnectionError(f"The status is incorrect: {response.status_code}")
+
+    from bs4 import BeautifulSoup
+    page = BeautifulSoup(response.text, features='html.parser')
+    main_div = page.find(id='MAIN').find_all('table', attrs={'class': 'BOX2'})[2].next.next.next.next
+
+    result_ram_list = []
+    for text_div in main_div.find_all('div', attrs={'class': 'BOX5B'}):
+        further_link: str = text_div.find('a', attrs={'class': 'BOX5PRODUCT'}).attrs['href']
+        temp_text = text_div.text + f' - {further_link}'
+        temp_list = temp_text[temp_text.find('RAM Module')::].split(' - ')  # we can neglect those elements
+        result_ram_list.append(temp_list)
+
+    if as_objects is True:
+        from component_classes.class_ram import RAM
+        return list([RAM(ram) for ram in result_ram_list])
+
+    return result_ram_list
 
 
 def aLinkMCCopy(t: str, b: str) -> str:
@@ -147,4 +171,14 @@ def aLinkCopy() -> str:  # Used heavily, from what it seems
 
 
 if __name__ == '__main__':
-    print(RAMManufacturer.fetch_all_as_dictionary())
+    # print(RAMManufacturer.fetch_all_as_dictionary())
+    test_params = {
+        'manufacturer': 'AddOn',
+        'size': '16 GB',
+        'speed': '2666 MHz',
+        'DDR_type': 'DDR 4'
+    }
+    ram_list = get_ram_list(test_params, as_objects=True)
+    print(f"Got {len(ram_list)} RAMs")
+    for ram in ram_list:
+        print(ram)
