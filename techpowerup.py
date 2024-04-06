@@ -104,14 +104,18 @@ def get_component_list(component_name: str,
                 headers.append(header.text)
 
     result = []
-    for row in table.find_all('tr'):
-        cpu = {}
+    for row in table.find_all('tr')[2:]:
         count = 0
+        component = {}
+        link = row.find('a').attrs['href']
+        component.update({"Link": link})
         for element in row.contents:
-            if type(element) == Tag:
-                cpu.update({headers[count]: element.text.replace("\n", "").strip()})
-                count += 1
-        result.append(cpu)
+            if type(element) != Tag:
+                continue
+            component.update({headers[count]: element.text.replace("\n", "").strip()})
+            count += 1
+        result.append(component)
+
 
     return {component_name.upper(): result}
 

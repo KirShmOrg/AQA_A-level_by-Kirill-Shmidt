@@ -70,7 +70,7 @@ class Database:
             print(component_list['error'])
             return
         else:
-            return [CPU(cpu) for cpu in component_list['CPU'][2:]]
+            return [CPU(cpu) for cpu in component_list['CPU']]
 
     @staticmethod
     def get_gpu_list(params: dict) -> list[GPU]:
@@ -80,7 +80,7 @@ class Database:
             print(component_list['error'])
             return
         else:
-            return [GPU(gpu) for gpu in component_list['GPU'][2:]]
+            return [GPU(gpu) for gpu in component_list['GPU']]
 
     @staticmethod
     def get_mb_list(params: dict) -> list[Motherboard]:

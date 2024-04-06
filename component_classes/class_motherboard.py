@@ -14,6 +14,7 @@ class Motherboard:
     max_ram: RAM = field(init=False, default=RAM(['']))
     release_year: int = field(init=False, default=0)
     ram_slots: int = field(init=False, default=0, repr=False)
+    further_link: str = field(init=False, default='', repr=False)
 
     def __post_init__(self):
         from motherboarddbcom import get_mb_socket
@@ -23,6 +24,7 @@ class Motherboard:
         self.chipset = self.all_specs['Chipset']
         self.release_year = int(self.all_specs['Release Year'])
         self.convert_ram()
+        self.further_link = self.all_specs['Link']
 
     def convert_ram(self) -> None:
         if 'RAM' not in self.all_specs.keys():

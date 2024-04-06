@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 from class_database import db
 
-BASE_URL = "https://motherboarddb.com/motherboards/"
+BASE_URL = "https://motherboarddb.com/motherboards"
 
 
 def parse_filters():
@@ -25,7 +25,7 @@ def parse_filters():
 
 
 def horse_around():
-    response = requests.get(f"{BASE_URL}ajax/table/?dt=table&page=1")
+    response = requests.get(f"{BASE_URL}/ajax/table/?dt=table&page=1")
     page = BeautifulSoup(response.text)
     print(page.prettify())
 
@@ -48,14 +48,15 @@ def parse_motherboards_list(params: dict):
     for filter_name, value in params.items():
         query += f'{filter_name}={allowed_filters[filter_name][value]}&'
     query += 'page=1'
-    response = requests.get(f"{BASE_URL}ajax/table/{query}")
+    response = requests.get(f"{BASE_URL}/ajax/table/{query}")
     page = BeautifulSoup(response.text, features="html.parser")
 
     result = {}
     for page_number in range(get_number_of_pages()):
-        page = BeautifulSoup(requests.get(f"{BASE_URL}ajax/table/{query[0:-1]}{page_number}&dt=list").text,
+        page = BeautifulSoup(requests.get(f"{BASE_URL}/ajax/table/{query[0:-1]}{page_number}&dt=list").text,
                              features="html.parser")
         names = [tag.text for tag in page.find_all('h4')]
+        links = [tag.parent.attrs['href'] for tag in page.find_all('h4')]
         count = 0
         for ul in page.find_all('ul', attrs={'class': ['list-unstyled']}):
             if count // 2 == 0:
@@ -78,6 +79,7 @@ def parse_motherboards_list(params: dict):
                 specs.update({key: None})
             else:
                 specs.update({key: value.strip()})
+        specs.update({'Link': links[names.index(mb_name)]})
         result.update({mb_name: specs})
 
     final_result = []  # a bad, temporary solution
@@ -107,4 +109,5 @@ if __name__ == '__main__':
     # NOTE: That's an AWFUL way to do that, please don't
     # Honestly, just f*** this error handling -- crash the program if sth goes wrong and that's it. good enough
     print(f'{len(mb_list)} motherboards parsed')
-    print(mb_list)
+    for mb in mb_list:
+        print(mb)

@@ -50,3 +50,7 @@ def run_all_tests() -> None:
 if __name__ == '__main__':
     # db.update_filters('CPU', 'GPU', 'MB', 'RAM')
     run_all_tests()
+    # test_mb()
+    # test_cpu()
+    # test_gpu()
+    # test_ram()

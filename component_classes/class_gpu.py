@@ -53,7 +53,7 @@ class GCores:
         temp_list: list[str] = self.init_string.split(' / ')
         if len(temp_list) != 3:
             raise IndexError("")
-        self.shaders, self.tmus, self.rops = temp_list
+        self.shaders, self.tmus, self.rops = map(int, temp_list)
 
 
 @dataclass
@@ -62,13 +62,15 @@ class GPU:
 
     human_name: str = field(init=False)
     # for all fields where repr=True it should be switched to False after testing
-    gpu_chip: str = field(init=False, repr=False)
-    speed_str: str = field(init=False, repr=False)
-    release_year: int = field(init=False, repr=False)
-    pci_e: PCIe = field(init=False)
-    memory: GMem = field(init=False)
-    cores: GCores = field(init=False)
+    gpu_chip: str = field(init=False, repr=False, default='')
+    speed_str: str = field(init=False, repr=False, default='0 MHz')
+    release_year: int = field(init=False, repr=False, default=0)
+    pci_e: PCIe = field(init=False, default=PCIe('PCIe 0.0 x0'))
+    memory: GMem = field(init=False, default=GMem('0 GB, GDDR0, 0 bits, 0 MHz'))
+    cores: GCores = field(init=False, default=GCores('0 / 0 / 0'))
+    further_link: str = field(init=False, repr=False, default='')
     exists: bool = field(init=False, repr=False, default=True)
+    # TODO: write proper checks, bloody hell
 
     def __post_init__(self):
         self.memory = GMem(f"{self.all_specs['Memory']}, {self.all_specs['Memory clock']}")
@@ -78,6 +80,7 @@ class GPU:
         self.convert_release_year()
         self.pci_e = PCIe(self.all_specs['Bus'])
         self.cores = GCores(self.all_specs['Shaders / TMUs / ROPs'])
+        self.further_link = self.all_specs.get('Link', '')
 
     def convert_release_year(self) -> None:
         if self.all_specs['Released'] in ['Unknown', 'N/A', None, 'None']:

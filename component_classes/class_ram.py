@@ -3,9 +3,9 @@ from dataclasses import dataclass, field
 
 @dataclass
 class RAM:
-    init_list: list[str] = field(repr=False)
-
-    # TODO: add a name, lol
+    all_specs: list[str] = field(repr=False)
+    # NOTE: the names which are given on this website are FAR from human
+    product_name: str = field(init=False, default='', repr=False)
     ddr_gen: int = field(init=False, default=0)
     cl_timing: int = field(init=False, default=0)
     size_gb: int = field(init=False, default=0)
@@ -14,8 +14,10 @@ class RAM:
     full_link: str = field(init=False, default='', repr=False)
 
     def __post_init__(self):
-        for element in self.init_list:
-            if 'SDRAM' in element:
+        for element in self.all_specs:
+            if element.startswith('Name: '):
+                self.product_name = element
+            elif 'SDRAM' in element:
                 temp_list = element.split()
                 self.ddr_gen = int(temp_list[0][-1])
             elif element.startswith('CL'):
@@ -32,5 +34,5 @@ class RAM:
                 self.speed_mhz = int(temp_list[0])
             elif element.endswith('DIMM'):
                 self.form_factor = element
-            elif element.endswith('.htm'):
-                self.full_link = 'provantage.com' + element
+            elif element.startswith('Link: '):
+                self.full_link = 'provantage.com' + element.split()[-1]

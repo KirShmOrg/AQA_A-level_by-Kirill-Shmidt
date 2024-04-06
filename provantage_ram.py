@@ -142,14 +142,17 @@ def get_ram_list(params: dict, as_objects: bool = False) -> list:
 
     result_ram_list = []
     for text_div in main_div.find_all('div', attrs={'class': 'BOX5B'}):
-        further_link: str = text_div.find('a', attrs={'class': 'BOX5PRODUCT'}).attrs['href']
-        temp_text = text_div.text + f' - {further_link}'
-        temp_list = temp_text[temp_text.find('RAM Module')::].split(' - ')  # we can neglect those elements
+        product_a: Tag = text_div.find('a', attrs={'class': 'BOX5PRODUCT'})
+        human_name = product_a.parent.text
+        further_link: str = product_a.attrs['href']
+        temp_text = f"{text_div.text} - Name: {human_name} - Link: {further_link}"
+        # temp_text = text_div.text + f' - {further_link}'
+        temp_list = temp_text[temp_text.find('RAM Modules')::].split(' - ')
         result_ram_list.append(temp_list)
 
     if as_objects is True:
         from component_classes.class_ram import RAM
-        return list([RAM(ram) for ram in result_ram_list])
+        return [RAM(ram) for ram in result_ram_list]
 
     return result_ram_list
 

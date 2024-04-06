@@ -16,6 +16,7 @@ class CPU:
     l3_cache_mb: int = field(init=False, repr=False)
     tdp_w: int = field(init=False)
     release_year: int = field(init=False, repr=False, default=0)
+    further_link: str = field(init=False, repr=False, default='')
     exists: bool = field(init=False, repr=False, default=True)
 
     def __post_init__(self):
@@ -28,6 +29,7 @@ class CPU:
         self.convert_l3_cache()
         self.convert_tdp()
         self.convert_d_o_r()
+        self.convert_link()
 
 
     # TODO: might as well just write down default values as field property
@@ -123,6 +125,9 @@ class CPU:
             self.release_year = -1
             return
         self.release_year = int(self.all_specs['Released'].split()[-1])
+
+    def convert_link(self) -> None:
+        self.further_link = self.all_specs.get('Link', '')
 
 
 if __name__ == '__main__':
