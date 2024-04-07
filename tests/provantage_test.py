@@ -4,6 +4,7 @@ class MismatchError(Exception):
         super().__init__(self.__message)
 
 def check_for_new_manufacturers() -> None:
+    raise NotImplementedError()
     import json
     import os
     from provantage_ram import RAMManufacturer
@@ -18,6 +19,7 @@ def check_for_new_manufacturers() -> None:
         raise MismatchError("The list of manufacturers from the database doesn't match the fetched results")
 
 def parse_link_into_dict(link: str) -> dict[str, str]:
+    raise NotImplementedError()
     from provantage_ram import BASE_URL
     if link.find(BASE_URL) != 0:
         raise ValueError(f"The link should start with BASE URL: {BASE_URL}\n{link} received instead")
@@ -47,6 +49,7 @@ def parse_link_into_dict(link: str) -> dict[str, str]:
     return stage_2
 
 def test_generate_link() -> None:
+    raise NotImplementedError
     from provantage_ram import generate_link
     test_cases = [
         [{"ddr_type": "DDR4 SDRAM", "size": "16 GB", "manufacturer": "AddOn", "speed": "2666 MHz"},

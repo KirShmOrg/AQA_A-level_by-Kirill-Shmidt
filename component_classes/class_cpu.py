@@ -8,14 +8,15 @@ class CPU:
 
     human_name: str = field(init=False)
     codename: str = field(init=False, repr=False)
-    cores: int = field(init=False)
+    cores: int = field(init=False, repr=False)
     threads: int = field(init=False)
-    clock_speed_range_GHz: dict[str, float] = field(init=False)
+    clock_speed_range_GHz: dict[str, float] = field(init=False, repr=False)
     socket: str = field(init=False)
     process_size_nm: int = field(init=False, repr=False)
     l3_cache_mb: int = field(init=False, repr=False)
     tdp_w: int = field(init=False)
-    date_of_release: datetime.date = field(init=False, repr=False)
+    release_year: int = field(init=False, repr=False, default=0)
+    further_link: str = field(init=False, repr=False, default='')
     exists: bool = field(init=False, repr=False, default=True)
 
     def __post_init__(self):
@@ -28,9 +29,17 @@ class CPU:
         self.convert_l3_cache()
         self.convert_tdp()
         self.convert_d_o_r()
+        self.convert_link()
 
-        # TODO: convert all_specs to a proper all_spec (the one after all the changes in __post_init__()
-        del self.all_specs
+
+    # TODO: might as well just write down default values as field property
+    def split_key_with_checks(self, key: str, split_by: str = ' ') -> list:
+        if key not in self.all_specs:
+            return None
+        string_value = self.all_specs[key]
+        if string_value in [None, 'N/A', 'Unknown', '']:
+            return None
+        return self.all_specs[key].split(split_by)
 
     def convert_name_and_codename(self) -> None:
         if self.split_key_with_checks('Name') is None:
@@ -42,14 +51,6 @@ class CPU:
             return
         self.codename = self.all_specs['Codename']
         return
-
-    def split_key_with_checks(self, key: str, split_by: str = ' ') -> list:
-        if key not in self.all_specs:
-            return None
-        string_value = self.all_specs[key]
-        if string_value in [None, 'N/A', 'Unknown', '']:
-            return None
-        return self.all_specs[key].split(split_by)
 
     def split_cores_and_threads(self) -> None:
         initial_string: str = self.all_specs['Cores']
@@ -114,27 +115,19 @@ class CPU:
         self.tdp_w = int(temp_list[0])
 
     def convert_d_o_r(self) -> None:
-        def month_str_to_int(month_str: str) -> int:
-            lookup_table: dict[str, int] = {}
-            for i in range(1, 13):
-                temp_month = date(year=1, month=i, day=1)
-                temp_month_str = datetime.strftime(temp_month, '%b')
-                lookup_table.update({temp_month_str: temp_month.month})
-            return lookup_table[month_str]
-
-        from datetime import date, datetime
-        check: list[str] = self.split_key_with_checks('Released')
-        if check is None:
-            self.date_of_release = date(1, 1, 1)
+        if 'Released' not in self.all_specs.keys():
             return
-        elif " ".join(check).lower() == 'never released':
+        if self.all_specs['Released'] in ['Unknown', 'N/A', None, 'None']:
+            self.release_year = 0
+            return
+        elif self.all_specs['Released'] == 'Never Released':
             self.exists = False
+            self.release_year = -1
             return
-        elif len(check) != 3:
-            raise ValueError(f"The date should be 3 words, not {check} with len {len(check)}")
+        self.release_year = int(self.all_specs['Released'].split()[-1])
 
-        self.date_of_release = date(year=int(check[-1].strip()), month=month_str_to_int(check[0]), day=1)
-        return
+    def convert_link(self) -> None:
+        self.further_link = self.all_specs.get('Link', '')
 
 
 if __name__ == '__main__':
