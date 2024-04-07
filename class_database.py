@@ -2,6 +2,7 @@ import time
 import json
 
 from component_classes.class_ram import RAM
+from component_classes.class_psu import PSU
 from component_classes.class_cpu import CPU
 from component_classes.class_gpu import GPU
 from component_classes.class_motherboard import Motherboard
@@ -23,12 +24,10 @@ class Database:
 
     @staticmethod
     def __update_provantage_manufacturers() -> None:
+        import os
         from provantage import get_all_manufacturers
 
         for_update = get_all_manufacturers()
-        import json
-        import os
-
         with open(os.path.join(os.path.dirname(__file__), 'all_jsons/provantage_manufacturers.json'), 'w') as file:
             json.dump(for_update, file, indent=4)
         print("Updated all manufacturers")
@@ -111,9 +110,12 @@ class Database:
 
     @staticmethod
     def get_ram_list(params: dict) -> list[RAM]:
-        from provantage_ram import get_ram_list
+        from provantage import get_component_list, Component
+        return get_component_list(component=Component.RAM, params=params, as_objects=True)
 
-        return get_ram_list(params, as_objects=True)
-
+    @staticmethod
+    def get_psu_list(params: dict) -> list[PSU]:
+        from provantage import get_component_list, Component
+        return get_component_list(component=Component.PSU, params=params, as_objects=True)
 
 db = Database()

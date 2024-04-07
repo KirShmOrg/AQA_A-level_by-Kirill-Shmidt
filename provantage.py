@@ -7,6 +7,8 @@ from selenium.webdriver.common.by import By
 
 from custom_request import request_get_v2
 from class_database import db
+from component_classes.class_ram import RAM
+from component_classes.class_psu import PSU
 
 
 class Component(Enum):
@@ -70,7 +72,7 @@ def human_param_to_provantage_code(human_param: str, component: Component):
             "Product Family": "377776919",
             "Country Of Origin": "35555883",
             "Is Modular": "377776945"
-            # Warranty might be added
+            # 'Warranty' might be added
         }
     }
 
@@ -94,6 +96,30 @@ def generate_link(component: Component, parameters: dict[str, str]) -> str:
         counter += 1
     return link
 
+def get_component_list(component: Component, params: dict, as_objects: bool = True) -> list:
+    link = generate_link(parameters=params, component=component)
+    response = request_get_v2(link)
+    page = BeautifulSoup(response.text, features='html.parser')
+    main_div = page.find(id='MAIN').find_all('table', attrs={'class': 'BOX2'})[2].next.next.next.next
+
+    result_list = []
+    for text_div in main_div.find_all('div', attrs={'class': 'BOX5B'}):
+        product_a: Tag = text_div.find('a', attrs={'class': 'BOX5PRODUCT'})
+        human_name = product_a.parent.text
+        further_link: str = product_a.attrs['href']
+        temp_text = f"{text_div.text} - Name: {human_name} - Link: {further_link}"  # TODO: also add manufacturer's name
+        temp_list = temp_text.split(' - ')
+        result_list.append(temp_list)
+
+    if as_objects is False:
+        return result_list
+
+    if component == Component.RAM:
+        return [RAM(ram_) for ram_ in result_list]
+    elif component == Component.PSU:
+        return [PSU(psu_) for psu_ in result_list]
+    else:
+        raise ZeroDivisionError(f"This should not have happened: The component is unknown. Expected: {list(Component)}")
 
 if __name__ == '__main__':
     test_cases = {
@@ -109,5 +135,7 @@ if __name__ == '__main__':
             'power': '650 W'
         }
     }
-    print(generate_link(Component.RAM, test_cases[Component.RAM]))
-    print(generate_link(Component.PSU, test_cases[Component.PSU]))
+    for ram in get_component_list(component=Component.RAM, params=test_cases[Component.RAM]):
+        print(ram)
+    for psu in get_component_list(component=Component.PSU, params=test_cases[Component.PSU]):
+        print(psu)

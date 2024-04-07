@@ -31,6 +31,15 @@ def test_ram() -> None:
     for ram in ram_list:
         print(ram)
 
+def test_psu() -> None:
+    psu_list = db.get_psu_list({
+            'manufacturer': "EVGA",
+            'modular': 'yes',
+            'power': '650 W'
+        })
+    for psu in psu_list:
+        print(psu)
+
 def test_mb() -> None:
     mb_list = db.get_mb_list(params={'manufacturer': 'Asus',
                                      'form_factor': 'Micro-ATX',
@@ -41,7 +50,7 @@ def test_mb() -> None:
         print(mb)
 
 def run_all_tests() -> None:
-    all_tests = [test_cpu, test_gpu, test_ram, test_mb]
+    all_tests = [test_cpu, test_gpu, test_ram, test_psu, test_mb]
     for run_test in all_tests:
         run_test()
         print('--' * 15)
@@ -54,3 +63,4 @@ if __name__ == '__main__':
     # test_cpu()
     # test_gpu()
     # test_ram()
+    # test_psu()

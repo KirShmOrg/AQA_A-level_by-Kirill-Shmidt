@@ -6,17 +6,18 @@ class RAM:
     all_specs: list[str] = field(repr=False)
     # NOTE: the names which are given on this website are FAR from human
     product_name: str = field(init=False, default='', repr=False)
+    manufacturer_name: str = field(init=False, default='', repr=False)
     ddr_gen: int = field(init=False, default=0)
     cl_timing: int = field(init=False, default=0)
     size_gb: int = field(init=False, default=0)
     form_factor: str = field(init=False, default='')
     speed_mhz: int = field(init=False, default=0)
-    full_link: str = field(init=False, default='', repr=False)
+    further_link: str = field(init=False, default='', repr=False)
 
     def __post_init__(self):
         for element in self.all_specs:
             if element.startswith('Name: '):
-                self.product_name = element
+                self.product_name = element[len('Name: '):]
             elif 'SDRAM' in element:
                 temp_list = element.split()
                 self.ddr_gen = int(temp_list[0][-1])
@@ -35,4 +36,4 @@ class RAM:
             elif element.endswith('DIMM'):
                 self.form_factor = element
             elif element.startswith('Link: '):
-                self.full_link = 'provantage.com' + element.split()[-1]
+                self.further_link = 'provantage.com' + element.split()[-1]
