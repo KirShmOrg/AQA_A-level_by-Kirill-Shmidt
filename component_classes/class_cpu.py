@@ -1,4 +1,3 @@
-import datetime
 from dataclasses import dataclass, field
 
 
@@ -30,7 +29,6 @@ class CPU:
         self.convert_tdp()
         self.convert_d_o_r()
         self.convert_link()
-
 
     # TODO: might as well just write down default values as field property
     def split_key_with_checks(self, key: str, split_by: str = ' ') -> list:

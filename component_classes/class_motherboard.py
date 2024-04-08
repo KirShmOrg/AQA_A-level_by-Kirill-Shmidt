@@ -19,17 +19,17 @@ class Motherboard:
     def __post_init__(self):
         from motherboarddbcom import get_mb_socket
         self.socket = get_mb_socket(self.all_specs)
-        self.human_name = self.all_specs['Name']
-        self.form_factor = self.all_specs['Form Factor']
-        self.chipset = self.all_specs['Chipset']
-        self.release_year = int(self.all_specs['Release Year'])
+        self.human_name = self.all_specs.get('Name', '')
+        self.form_factor = self.all_specs.get('Form Factor', '')
+        self.chipset = self.all_specs.get('Chipset', '')
+        self.release_year = int(self.all_specs.get('Release Year', 0))
         self.convert_ram()
-        self.further_link = self.all_specs['Link']
+        self.further_link = self.all_specs.get('Link', '')
 
     def convert_ram(self) -> None:
         if 'RAM' not in self.all_specs.keys():
             return
-        temp_list: list = self.all_specs['RAM'].split()
+        temp_list: list = self.all_specs.get('RAM').split()
         if len(temp_list) != 5:
             raise IndexError(f"RAM should be 5 words, not {len(temp_list)}: {temp_list}")
         self.ram_slots = int(temp_list[0].rstrip('x'))
@@ -45,3 +45,4 @@ if __name__ == '__main__':
                'Audio Chip': 'Realtek ALC887', 'USB 2.0 Headers': None, 'USB 3.0 Headers': None, 'SATA3': '4'}
     TEST_MB = Motherboard(TEST_MB)
     print(TEST_MB.socket, TEST_MB.all_specs)
+    print(TEST_MB)
