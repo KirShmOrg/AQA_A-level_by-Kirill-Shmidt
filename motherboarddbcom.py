@@ -9,7 +9,7 @@ from custom_request import request_get_v2
 BASE_URL = "https://motherboarddb.com/motherboards"
 
 
-def parse_filters():
+def parse_filters() -> dict:
     result = {}
     response = request_get_v2(f"{BASE_URL}")
     page = BeautifulSoup(response.text, features="html.parser")
@@ -24,13 +24,7 @@ def parse_filters():
     return result
 
 
-def horse_around():
-    response = request_get_v2(f"{BASE_URL}/ajax/table/?dt=table&page=1")
-    page = BeautifulSoup(response.text)
-    print(page.prettify())
-
-
-def parse_motherboards_list(params: dict):
+def parse_motherboards_list(params: dict) -> list[dict[str, str]]:
     def get_number_of_pages() -> int:
         nonlocal page
         pagination_options: list[Tag] = page.find('ul', {'class': 'pagination'}).find_all('li', {'class': 'page-item'})
@@ -111,18 +105,31 @@ def parse_motherboards_list(params: dict):
 def get_mb_socket(motherboard: dict) -> str:
     return motherboard['Socket(s)'][3:]  # this is because the actual socket value is like "1x SOCKET_NAME"
 
+def get_further_information(link: str) -> dict:
+    raise NotImplementedError("refactor cards_dict into a list, I guess")
+    page = BeautifulSoup(request_get_v2(link).text, features='html.parser')
+    cards_dict = {}
+    headers_whitelist = [text.lower() for text in ['General Information', 'Expansion Slots', 'Memory']]
+    # we might want to add M.2 Slots
+    for card in page.find_all('div', {'class': 'card'}):
+        card_header = card.find('div', {'class': 'card-header'}).text.lower()
+        if card_header in headers_whitelist:
+            cards_dict.update({card_header: {card.find('div', {'class': 'card-body'})}})
+
+    result = {}
+    if 'General Information'.lower() in cards_dict.keys():
+        print('found')
+        print(cards_dict['General Information'.lower()].find('tr').text)
+
+    return result
 
 if __name__ == '__main__':
-    mb_list = parse_motherboards_list(params={'manufacturer': 'Asus',
-                                              'form_factor': 'Micro-ATX',
-                                              'socket': 'AM4',
-                                              'chipset': 'AMD B450',
-                                              })
-    # if 'error' in mb_list.keys():
-    #     print(mb_list['error'])
-    # else:
-    # NOTE: That's an AWFUL way to do that, please don't
-    # Honestly, just f*** this error handling -- crash the program if sth goes wrong and that's it. good enough
-    print(f'{len(mb_list)} motherboards parsed')
-    for mb in mb_list:
-        print(mb)
+    # mb_list = parse_motherboards_list(params={'manufacturer': 'Asus',
+    #                                           'form_factor': 'Micro-ATX',
+    #                                           'socket': 'AM4',
+    #                                           'chipset': 'AMD B450',
+    #                                           })
+    # print(f'{len(mb_list)} motherboards parsed')
+    # for mb in mb_list:
+    #     print(mb)
+    get_further_information('https://motherboarddb.com/motherboards/1463/ROG%20Strix%20B450-F%20Gaming/')

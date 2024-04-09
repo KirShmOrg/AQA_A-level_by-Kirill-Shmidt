@@ -27,12 +27,14 @@ def correct_gpu(gpu: GPU, mb: Motherboard) -> bool:
     raise NotImplementedError("Can't do that yet")
 
 
-def correct_wattage(psu: PSU, cpu: CPU, gpu: GPU):
-    return psu.wattage > cpu.tdp_w + gpu.tdp_w
+def correct_wattage(psu: PSU, cpu: CPU, gpu: GPU, ram_list: list[RAM]):
+    # NOTE: as a rule of thumb, crucial.com recommends 3 Watts per every 8 GB
+    ram_consumption = sum(map(lambda ram: ram.size_gb, ram_list)) * 3 / 8
+    return psu.wattage > cpu.tdp_w + gpu.tdp_w + ram_consumption
 
 
 def check_all(cpu: CPU, gpu: GPU, ram_list: list[RAM], mb: Motherboard, psu: PSU) -> bool:
-    return correct_wattage(psu=psu, cpu=cpu, gpu=gpu) and correct_sockets(cpu=cpu, mb=mb) \
+    return correct_wattage(psu=psu, cpu=cpu, gpu=gpu, ram_list=ram_list) and correct_sockets(cpu=cpu, mb=mb) \
         and correct_ram(ram_list=ram_list, mb=mb)
 
 
