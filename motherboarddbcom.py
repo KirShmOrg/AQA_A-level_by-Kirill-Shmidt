@@ -1,4 +1,3 @@
-import json
 import time
 
 from bs4 import BeautifulSoup
@@ -32,11 +31,18 @@ def horse_around():
 
 
 def parse_motherboards_list(params: dict):
-    def get_number_of_pages():
+    def get_number_of_pages() -> int:
         nonlocal page
-        text = page.find('p').text
-        return int(text.split()[-1])
+        pagination_options: list[Tag] = page.find('ul', {'class': 'pagination'}).find_all('li', {'class': 'page-item'})
+        max_page = 1
+        for li in pagination_options:
+            if int(li.text) > max_page:  # this could have been done in a very nice max(map(lambda ...)),
+                # but the issue is that when we have 1 page, there is no "Next", unlike with 2+ pages
+                max_page = int(li.text)
+        return max_page
 
+
+    filters_time_start = time.perf_counter()
     allowed_filters = db.get_filters('mb')[0]
     # TODO: allow the "value" variable to be a list
     for filter_name, value in params.items():
@@ -45,17 +51,23 @@ def parse_motherboards_list(params: dict):
         elif value not in allowed_filters[filter_name].keys():
             return {'error': f'There is no such option as {value} in {filter_name}'}
 
+    print(f"Parsing filters: {time.perf_counter() - filters_time_start}")
+
+    request_time_start = time.perf_counter()
     query = "?"
     for filter_name, value in params.items():
         query += f'{filter_name}={allowed_filters[filter_name][value]}&'
     query += 'page=1'
-    response = request_get_v2(f"{BASE_URL}/ajax/table/{query}")
+    response = request_get_v2(f"{BASE_URL}/ajax/table/{query}&dt=list")
     page = BeautifulSoup(response.text, features="html.parser")
+    print(f"Receiving a page: {time.perf_counter() - request_time_start}")
 
+    parsing_time_start = time.perf_counter()  # I did not cook there...
     result = {}
-    for page_number in range(get_number_of_pages()):
-        page = BeautifulSoup(request_get_v2(f"{BASE_URL}/ajax/table/{query[0:-1]}{page_number}&dt=list").text,
-                             features="html.parser")
+    for page_number in range(1, get_number_of_pages()+1):
+        if page_number > 1:
+            page = BeautifulSoup(request_get_v2(f"{BASE_URL}/ajax/table/{query[0:-1]}{page_number}&dt=list").text,
+                                 features="html.parser")
         names = [tag.text for tag in page.find_all('h4')]
         links = [tag.parent.attrs['href'] for tag in page.find_all('h4')]
         count = 0
@@ -69,7 +81,9 @@ def parse_motherboards_list(params: dict):
             result.update({names[count // 2]: temp})
             count += 1
         time.sleep(1)
+    print(f"Parsing the page: {time.perf_counter() - parsing_time_start}")  # HOLY SMOKES, this takes 10 seconds!
 
+    data_refactoring_time_start = time.perf_counter()
     for mb_name, properties in result.items():
         specs = {}
         for _property in properties:
@@ -90,7 +104,7 @@ def parse_motherboards_list(params: dict):
         temp.update({'Name': mb_name})
         temp.update(specs)
         final_result.append(temp)
-
+    print(f"Data refactoring: {time.perf_counter() - data_refactoring_time_start}")
     return final_result
 
 
