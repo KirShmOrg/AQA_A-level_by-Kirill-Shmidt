@@ -84,15 +84,15 @@ def get_component_list(component_name: str,
         allowed_filters = db.get_filters(component_name)[0]
 
         for filter_name, value in params.items():
-            if filter_name.lower() not in allowed_filters.keys():
+            if filter_name not in allowed_filters.keys():  # the whole website is case-sensitive, apparently
                 return {'error': f"There is no such filter as {filter_name}"}
-            elif value not in allowed_filters[filter_name.lower()]:
+            elif value not in allowed_filters[filter_name]:
                 return {'error': f"There is no such option as {value} in filter {filter_name}"}
         # up to here, the values are definitely correct
 
         query = "?"
         for _filter, value in params.items():
-            query += f"{_filter.lower()}={value}&"
+            query += f"{_filter}={value}&"
         query += f'sort={sort_by}'
     else:
         query = ""
