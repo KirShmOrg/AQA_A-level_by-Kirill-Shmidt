@@ -84,7 +84,7 @@ def get_component_list(component_name: str,
         allowed_filters = db.get_filters(component_name)[0]
 
         for filter_name, value in params.items():
-            if filter_name not in allowed_filters.keys():  # the whole website is case-sensitive, apparently
+            if filter_name.lower not in allowed_filters.keys():
                 return {'error': f"There is no such filter as {filter_name}"}
             elif value not in allowed_filters[filter_name]:
                 return {'error': f"There is no such option as {value} in filter {filter_name}"}
