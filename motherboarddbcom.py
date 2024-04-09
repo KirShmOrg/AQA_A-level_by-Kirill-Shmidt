@@ -42,7 +42,7 @@ def parse_motherboards_list(params: dict):
         return max_page
 
 
-    filters_time_start = time.perf_counter()
+    # filters_time_start = time.perf_counter()
     allowed_filters = db.get_filters('mb')[0]
     # TODO: allow the "value" variable to be a list
     for filter_name, value in params.items():
@@ -51,18 +51,18 @@ def parse_motherboards_list(params: dict):
         elif value not in allowed_filters[filter_name].keys():
             return {'error': f'There is no such option as {value} in {filter_name}'}
 
-    print(f"Parsing filters: {time.perf_counter() - filters_time_start}")
+    # print(f"Parsing filters: {time.perf_counter() - filters_time_start}")
 
-    request_time_start = time.perf_counter()
+    # request_time_start = time.perf_counter()
     query = "?"
     for filter_name, value in params.items():
         query += f'{filter_name}={allowed_filters[filter_name][value]}&'
     query += 'page=1'
     response = request_get_v2(f"{BASE_URL}/ajax/table/{query}&dt=list")
     page = BeautifulSoup(response.text, features="html.parser")
-    print(f"Receiving a page: {time.perf_counter() - request_time_start}")
+    # print(f"Receiving a page: {time.perf_counter() - request_time_start}")
 
-    parsing_time_start = time.perf_counter()  # I did not cook there...
+    # parsing_time_start = time.perf_counter()
     result = {}
     for page_number in range(1, get_number_of_pages()+1):
         if page_number > 1:
@@ -81,9 +81,9 @@ def parse_motherboards_list(params: dict):
             result.update({names[count // 2]: temp})
             count += 1
         time.sleep(1)
-    print(f"Parsing the page: {time.perf_counter() - parsing_time_start}")  # HOLY SMOKES, this takes 10 seconds!
+    # print(f"Parsing the page: {time.perf_counter() - parsing_time_start}")
 
-    data_refactoring_time_start = time.perf_counter()
+    # data_refactoring_time_start = time.perf_counter()
     for mb_name, properties in result.items():
         specs = {}
         for _property in properties:
@@ -104,7 +104,7 @@ def parse_motherboards_list(params: dict):
         temp.update({'Name': mb_name})
         temp.update(specs)
         final_result.append(temp)
-    print(f"Data refactoring: {time.perf_counter() - data_refactoring_time_start}")
+    # print(f"Data refactoring: {time.perf_counter() - data_refactoring_time_start}")
     return final_result
 
 
