@@ -84,7 +84,7 @@ def get_component_list(component_name: str,
         allowed_filters = db.get_filters(component_name)[0]
 
         for filter_name, value in params.items():
-            if filter_name not in allowed_filters.keys():
+            if filter_name.lower not in allowed_filters.keys():
                 return {'error': f"There is no such filter as {filter_name}"}
             elif value not in allowed_filters[filter_name]:
                 return {'error': f"There is no such option as {value} in filter {filter_name}"}
@@ -120,7 +120,6 @@ def get_component_list(component_name: str,
             count += 1
         result.append(component)
 
-
     return {component_name.upper(): result}
 
 
@@ -128,19 +127,18 @@ def get_cpu_socket(cpu: dict) -> str:
     return cpu['Socket'][len('Socket '):]  # this is very error-prone
     # TODO: make a proper socket class or sth
 
+
 def get_gpu_tdp(gpu_link: str, error_count: int = 0) -> int:
     response = request_get_v2(gpu_link)
 
     if response.status_code != 200:
         error_count += 1
         print(f"The response code was {response.status_code}")
-        time.sleep(5*error_count)
+        time.sleep(5 * error_count)
         return get_gpu_tdp(gpu_link, error_count)
 
     page = BeautifulSoup(response.text, features='html.parser')
     return int(page.find('dt', string='TDP').parent.find('dd').text.split()[0])
-
-
 
 
 if __name__ == '__main__':

@@ -36,7 +36,8 @@ class GMem:
         if 'GB' not in temp_list[0] or "DDR" not in temp_list[1] or 'bit' not in temp_list[2]:
             raise ValueError(f"Wrong inputs: {self.init_string}")
         self.size_gb, self.type, self.width_bits, self.speed_mhz = int(temp_list[0].split()[0]), temp_list[1], int(
-            temp_list[2].split()[0]), int(temp_list[3].split()[0])  # readability is definitely not a priority in this one because no need to
+            temp_list[2].split()[0]), int(
+            temp_list[3].split()[0])  # readability is definitely not a priority in this one because no need to
 
         # should I delete that?
         del self.init_string
@@ -64,6 +65,7 @@ class GPU:
     human_name: str = field(init=False)
     # for all fields where repr=True it should be switched to False after testing
     gpu_chip: str = field(init=False, repr=False, default='')
+    __tdp_w: int = field(init=False, repr=False, default=0)
     speed_str: str = field(init=False, repr=False, default='0 MHz')
     release_year: int = field(init=False, repr=False, default=0)
     pci_e: PCIe = field(init=False, default=PCIe('PCIe 0.0 x0'))
@@ -71,6 +73,7 @@ class GPU:
     cores: GCores = field(init=False, default=GCores('0 / 0 / 0'))
     further_link: str = field(init=False, repr=False, default='')
     exists: bool = field(init=False, repr=False, default=True)
+
     # TODO: write proper checks, bloody hell
 
     def __post_init__(self):
@@ -81,7 +84,6 @@ class GPU:
         self.convert_release_year()
         self.pci_e = PCIe(self.all_specs['Bus'])
         self.cores = GCores(self.all_specs['Shaders / TMUs / ROPs'])
-        self.__tdp = None
         self.further_link = f"https://www.techpowerup.com{self.all_specs.get('Link', '')}"
 
     def convert_release_year(self) -> None:
@@ -98,12 +100,12 @@ class GPU:
         time.sleep(3)  # it is bad, but we have to respect the server
         from techpowerup import get_gpu_tdp
         return get_gpu_tdp(self.further_link)
-    @property
-    def tdp(self) -> int:
-        if self.__tdp is None:
-            self.__tdp = self.__fetch_tdp()  # TODO: remove an infinite loop if fetch returns None
-        return self.__tdp
 
+    @property
+    def tdp_w(self) -> int:
+        if self.__tdp_w is None:
+            self.__tdp_w = self.__fetch_tdp()  # TODO: remove an infinite loop if fetch returns None
+        return self.__tdp_w
 
 
 if __name__ == '__main__':

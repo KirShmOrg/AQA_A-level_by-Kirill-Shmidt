@@ -118,4 +118,5 @@ class Database:
         from provantage import get_component_list, Component
         return get_component_list(component=Component.PSU, params=params, as_objects=True)
 
+
 db = Database()

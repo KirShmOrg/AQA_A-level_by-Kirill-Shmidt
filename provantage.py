@@ -96,6 +96,7 @@ def generate_link(component: Component, parameters: dict[str, str]) -> str:
         counter += 1
     return link
 
+
 def get_component_list(component: Component, params: dict, as_objects: bool = True) -> list:
     link = generate_link(parameters=params, component=component)
     response = request_get_v2(link)
@@ -120,6 +121,7 @@ def get_component_list(component: Component, params: dict, as_objects: bool = Tr
         return [PSU(psu_) for psu_ in result_list]
     else:
         raise ZeroDivisionError(f"This should not have happened: The component is unknown. Expected: {list(Component)}")
+
 
 if __name__ == '__main__':
     test_cases = {
