@@ -13,6 +13,7 @@ class RAM:
     form_factor: str = field(init=False, default='')
     speed_mhz: int = field(init=False, default=0)
     further_link: str = field(init=False, default='', repr=False)
+    # TODO: add support_ecc: bool
 
     def __post_init__(self):
         for element in self.all_specs:

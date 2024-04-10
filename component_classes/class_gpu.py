@@ -7,8 +7,8 @@ from dataclasses import dataclass, field
 class PCIe:
     init_string: str = field(repr=False)
 
-    generation: float = field(init=False)
-    lanes: int = field(init=False)
+    generation: float = field(init=False, default=0.0)
+    lanes: int = field(init=False, default=0)
 
     def __post_init__(self):
         temp_list: list[str] = self.init_string.split()
@@ -84,7 +84,7 @@ class GPU:
         self.convert_release_year()
         self.pci_e = PCIe(self.all_specs['Bus'])
         self.cores = GCores(self.all_specs['Shaders / TMUs / ROPs'])
-        self.further_link = f"https://www.techpowerup.com{self.all_specs.get('Link', '')}"
+        self.further_link = self.all_specs.get('Link', '')
 
     def convert_release_year(self) -> None:
         if self.all_specs['Released'] in ['Unknown', 'N/A', None, 'None']:

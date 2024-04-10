@@ -1,7 +1,10 @@
 from dataclasses import dataclass, field
 
+from component_classes.class_gpu import PCIe
+from component_classes.class_ram import RAM
 
-@dataclass  # I might want to use 'frozen=True'
+
+@dataclass
 class CPU:
     all_specs: dict = field(init=True, repr=False)
 
@@ -17,6 +20,9 @@ class CPU:
     release_year: int = field(init=False, repr=False, default=0)
     further_link: str = field(init=False, repr=False, default='')
     exists: bool = field(init=False, repr=False, default=True)
+
+    __max_pcie: PCIe = field(init=False, repr=False, default=None)
+    __max_ram: RAM = field(init=False, repr=False, default=None)
 
     def __post_init__(self):
         from techpowerup import get_cpu_socket
@@ -127,11 +133,29 @@ class CPU:
     def convert_link(self) -> None:
         self.further_link = self.all_specs.get('Link', '')
 
+    def convert_further_information(self) -> None:
+        from techpowerup import get_further_cpu_data
+        deep_data = get_further_cpu_data(self.further_link)
+        self.__max_pcie = deep_data['pcie']
+        self.__max_ram = deep_data['ram']
+
+    @property
+    def max_pcie(self) -> PCIe:
+        if self.__max_pcie is None:
+            self.convert_further_information()
+        return self.__max_pcie
+
+    @property
+    def max_ram(self) -> RAM:
+        if self.__max_ram is None:
+            self.convert_further_information()
+        return self.__max_ram
+
 
 if __name__ == '__main__':
     TEST_CPU = {'Name': 'A10-7870K', 'Codename': 'Godaveri', 'Cores': '4', 'Clock': '3.9 to 4.1 GHz',
                 'Socket': 'Socket FM2+', 'Process': '28 nm', 'L3 Cache': 'N/A', 'TDP': '95 W',
-                'Released': 'May 28th, 2015'}
+                'Released': 'May 28th, 2015', 'Link': 'https://www.techpowerup.com/cpu-specs/a10-7870k.c1833'}
 
     TEST_CPU = CPU(all_specs=TEST_CPU)
-    print(TEST_CPU)
+    print(TEST_CPU.max_pcie, TEST_CPU.max_ram)

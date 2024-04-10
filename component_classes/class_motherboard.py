@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 
 from component_classes.class_ram import RAM
+from component_classes.class_gpu import GPU, PCIe
 
 
 @dataclass
@@ -15,6 +16,14 @@ class Motherboard:
     release_year: int = field(init=False, default=0)
     ram_slots: int = field(init=False, default=0, repr=False)
     further_link: str = field(init=False, default='', repr=False)
+
+    _max_pci_e: PCIe = field(init=False, default=None, repr=False)
+
+    @property
+    def max_pci_e(self) -> PCIe:
+        if self._max_pci_e is None:
+            self.convert_further_data()
+        return self._max_pci_e
 
     def __post_init__(self):
         from motherboarddbcom import get_mb_socket
@@ -38,11 +47,19 @@ class Motherboard:
         ram_list += [f"{' '.join(temp_list[-2:])} Memory Speed"]
         self.max_ram = RAM(ram_list)
 
+    def convert_further_data(self) -> None:
+        from motherboarddbcom import get_further_information
+        deep_data = get_further_information(link=self.further_link)
+        self.max_ram.size_gb = int(deep_data['memory']['Maximum Capacity'].split()[0])
+        self.max_ram.form_factor = deep_data['memory']['Slot Type'].split()[-1]
+        self._max_pci_e = PCIe(' '.join(deep_data['expansion slots'][0].split()[1:4]))
+
 
 if __name__ == '__main__':
     TEST_MB = {'Name': 'Asus TUF B450M-Pro Gaming', 'Socket(s)': '1x AM4', 'Form Factor': 'Micro-ATX',
                'Chipset': 'AMD B450', 'RAM': '2x DDR4 @ 3466 MHz', 'Release Year': '2018',
-               'Audio Chip': 'Realtek ALC887', 'USB 2.0 Headers': None, 'USB 3.0 Headers': None, 'SATA3': '4'}
+               'Audio Chip': 'Realtek ALC887', 'USB 2.0 Headers': None, 'USB 3.0 Headers': None, 'SATA3': '4',
+               'Link': 'https://motherboarddb.com/motherboards/1463/ROG%20Strix%20B450-F%20Gaming/'}
     TEST_MB = Motherboard(TEST_MB)
-    print(TEST_MB.socket, TEST_MB.all_specs)
-    print(TEST_MB)
+    TEST_MB.convert_further_data()
+    print(TEST_MB.max_ram.size_gb, TEST_MB.max_pci_e)

@@ -35,7 +35,6 @@ def parse_motherboards_list(params: dict) -> list[dict[str, str]]:
                 max_page = int(li.text)
         return max_page
 
-
     # filters_time_start = time.perf_counter()
     allowed_filters = db.get_filters('mb')[0]
     # TODO: allow the "value" variable to be a list
@@ -58,7 +57,7 @@ def parse_motherboards_list(params: dict) -> list[dict[str, str]]:
 
     # parsing_time_start = time.perf_counter()
     result = {}
-    for page_number in range(1, get_number_of_pages()+1):
+    for page_number in range(1, get_number_of_pages() + 1):
         if page_number > 1:
             page = BeautifulSoup(request_get_v2(f"{BASE_URL}/ajax/table/{query[0:-1]}{page_number}&dt=list").text,
                                  features="html.parser")
@@ -88,7 +87,7 @@ def parse_motherboards_list(params: dict) -> list[dict[str, str]]:
                 specs.update({key: None})
             else:
                 specs.update({key: value.strip()})
-        specs.update({'Link': links[names.index(mb_name)]})
+        specs.update({'Link': "https://motherboarddb.com" + links[names.index(mb_name)]})
         result.update({mb_name: specs})
 
     final_result = []  # a bad, temporary solution
@@ -105,23 +104,29 @@ def parse_motherboards_list(params: dict) -> list[dict[str, str]]:
 def get_mb_socket(motherboard: dict) -> str:
     return motherboard['Socket(s)'][3:]  # this is because the actual socket value is like "1x SOCKET_NAME"
 
+
 def get_further_information(link: str) -> dict:
-    raise NotImplementedError("refactor cards_dict into a list, I guess")
+    def parse_expansions(card: Tag) -> list[str]:
+        return [li.text.strip() for li in card.find('ul') if li.text != '\n']
+
     page = BeautifulSoup(request_get_v2(link).text, features='html.parser')
     cards_dict = {}
     headers_whitelist = [text.lower() for text in ['General Information', 'Expansion Slots', 'Memory']]
     # we might want to add M.2 Slots
     for card in page.find_all('div', {'class': 'card'}):
         card_header = card.find('div', {'class': 'card-header'}).text.lower()
-        if card_header in headers_whitelist:
-            cards_dict.update({card_header: {card.find('div', {'class': 'card-body'})}})
+        if card_header not in headers_whitelist:
+            continue
+        if card_header == 'Expansion Slots'.lower():
+            cards_dict.update({card_header: parse_expansions(card)})
+            continue
+        temp = {}
+        for tr in card.find_all('tr'):
+            temp.update({tr.find('th').text.strip(): tr.find('td').text.strip().replace('\n', ' ')})
+        cards_dict.update({card_header: temp})
 
-    result = {}
-    if 'General Information'.lower() in cards_dict.keys():
-        print('found')
-        print(cards_dict['General Information'.lower()].find('tr').text)
+    return cards_dict
 
-    return result
 
 if __name__ == '__main__':
     # mb_list = parse_motherboards_list(params={'manufacturer': 'Asus',
@@ -132,4 +137,6 @@ if __name__ == '__main__':
     # print(f'{len(mb_list)} motherboards parsed')
     # for mb in mb_list:
     #     print(mb)
-    get_further_information('https://motherboarddb.com/motherboards/1463/ROG%20Strix%20B450-F%20Gaming/')
+    info = get_further_information('https://motherboarddb.com/motherboards/1463/ROG%20Strix%20B450-F%20Gaming/')
+    for key, value in info.items():
+        print(key, value, '--'*15, sep='\n')

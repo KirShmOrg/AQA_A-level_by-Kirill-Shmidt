@@ -7,8 +7,11 @@ import json
 
 from class_database import db
 from custom_request import request_get_v2
+from component_classes.class_gpu import PCIe
+from component_classes.class_ram import RAM
 
-LINKS = {'CPU': "https://www.techpowerup.com/cpu-specs/", "GPU": "https://www.techpowerup.com/gpu-specs/"}
+BASE_URL = 'https://www.techpowerup.com'
+LINKS = {'CPU': BASE_URL + "/cpu-specs/", "GPU": BASE_URL + "/gpu-specs/"}
 
 
 def parse_labels(website_link: str):
@@ -112,7 +115,7 @@ def get_component_list(component_name: str,
         count = 0
         component = {}
         link = row.find('a').attrs['href']
-        component.update({"Link": link})
+        component.update({"Link": BASE_URL + link})
         for element in row.contents:
             if type(element) != Tag:
                 continue
@@ -128,18 +131,38 @@ def get_cpu_socket(cpu: dict) -> str:
     # TODO: make a proper socket class or sth
 
 
+def get_further_cpu_data(link: str) -> dict:
+    def get_td_text_by_th(th_name: str) -> str:
+        nonlocal page
+        return page.find('th', string=th_name).parent.find('td').text.strip()
+
+    deep_data = {'pcie': None, 'ram': None}
+
+    page = BeautifulSoup(request_get_v2(link).text, features='html.parser')
+
+    further_pcie = PCIe('Gen 0.0 x0')
+    pcie_string = get_td_text_by_th('PCI-Express:')
+    pcie_list = pcie_string[0: pcie_string.find('(')].split(', ')
+    further_pcie.lanes = int(pcie_list[-1].split()[0])
+    further_pcie.generation = float(pcie_list[0].split()[-1])
+    deep_data['pcie'] = further_pcie
+
+    further_ram = RAM([])
+    ddr_type = get_td_text_by_th('Memory Support:')
+    further_ram.ddr_gen = int(ddr_type[-1])
+    speed_mts = get_td_text_by_th('Rated Speed:')
+    further_ram.speed_mhz = int(speed_mts.split()[0])
+    deep_data['ram'] = further_ram
+
+    return deep_data
+
+
 def get_gpu_tdp(gpu_link: str, error_count: int = 0) -> int:
     response = request_get_v2(gpu_link)
-
-    if response.status_code != 200:
-        error_count += 1
-        print(f"The response code was {response.status_code}")
-        time.sleep(5 * error_count)
-        return get_gpu_tdp(gpu_link, error_count)
-
     page = BeautifulSoup(response.text, features='html.parser')
     return int(page.find('dt', string='TDP').parent.find('dd').text.split()[0])
 
 
 if __name__ == '__main__':
-    print(get_gpu_tdp('https://www.techpowerup.com/gpu-specs/radeon-rx-7600-xt.c4190'))
+    # print(get_gpu_tdp('https://www.techpowerup.com/gpu-specs/radeon-rx-7600-xt.c4190'))
+    print(get_further_cpu_data('https://www.techpowerup.com/cpu-specs/ryzen-5-3600.c2132'))
