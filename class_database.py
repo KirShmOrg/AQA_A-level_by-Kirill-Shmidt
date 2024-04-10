@@ -16,7 +16,7 @@ class Database:
         self.provantage_manufacturers_location = self.__get_full_filepath("all_jsons/provantage_manufacturers.json")
 
     @staticmethod
-    def __get_full_filepath(destination_path: str):
+    def __get_full_filepath(destination_path: str) -> str:
         import os
 
         current_dir = os.path.dirname(__file__)

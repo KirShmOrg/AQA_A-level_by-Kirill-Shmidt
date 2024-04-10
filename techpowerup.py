@@ -14,7 +14,7 @@ BASE_URL = 'https://www.techpowerup.com'
 LINKS = {'CPU': BASE_URL + "/cpu-specs/", "GPU": BASE_URL + "/gpu-specs/"}
 
 
-def parse_labels(website_link: str):
+def parse_labels(website_link: str) -> list:
     def filter_labels():
         nonlocal labels
         for label in labels:
@@ -32,11 +32,11 @@ def parse_labels(website_link: str):
     return labels
 
 
-def get_labels_with_values(hardware_name: str):
+def get_labels_with_values(hardware_name: str) -> dict[str, list]:
     if hardware_name.upper() not in LINKS.keys():
         return {'error': f'updating {hardware_name} is not possible'}
 
-    def remove_parenthesis(string: str):
+    def remove_parenthesis(string: str) -> str:
         # TODO: figure our whether we need this at all
         start = string.find('(')
         end = string.find(')')
@@ -77,7 +77,7 @@ def get_component_list(component_name: str,
                        # is_multi_unlocked: bool = None,
                        # has_igp: bool = None,
                        params: dict = None
-                       ):
+                       ) -> dict[str, list]:
     if component_name.upper() not in LINKS.keys():
         return {'error': f'updating {component_name} is not possible'}
     if sort_by not in ['name', 'released', 'generation']:

@@ -55,7 +55,7 @@ def get_all_manufacturers() -> dict[str, str]:
     return for_update
 
 
-def human_param_to_provantage_code(human_param: str, component: Component):
+def human_param_to_provantage_code(human_param: str, component: Component) -> str:
     checkup_table = {
         Component.RAM: {
             "Product Type | Category": "31100",

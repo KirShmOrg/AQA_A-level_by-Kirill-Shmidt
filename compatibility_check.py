@@ -59,7 +59,7 @@ def correct_gpu(gpu: GPU, mb: Motherboard, cpu: CPU) -> bool:
 
 
 # Finished
-def correct_wattage(psu: PSU, cpu: CPU, gpu: GPU, ram_list: list[RAM]):
+def correct_wattage(psu: PSU, cpu: CPU, gpu: GPU, ram_list: list[RAM]) -> bool:
     # NOTE: as a rule of thumb, crucial.com recommends 3 Watts per every 8 GB
     ram_consumption = sum([ram.size_gb for ram in ram_list]) * 3 / 8
     return psu.wattage > cpu.tdp_w + gpu.tdp_w + ram_consumption
