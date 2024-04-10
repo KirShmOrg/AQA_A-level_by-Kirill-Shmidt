@@ -2,9 +2,10 @@ import time
 
 from bs4 import BeautifulSoup
 from bs4.element import Tag
-from class_database import db
+from class_database import db, Components
 
 from custom_request import request_get_v2
+
 
 BASE_URL = "https://motherboarddb.com/motherboards"
 
@@ -36,7 +37,7 @@ def parse_motherboards_list(params: dict) -> list[dict[str, str]]:
         return max_page
 
     # filters_time_start = time.perf_counter()
-    allowed_filters = db.get_filters('mb')[0]
+    allowed_filters = db.get_filters(Components.MB)[Components.MB]
     # TODO: allow the "value" variable to be a list
     for filter_name, value in params.items():
         if filter_name not in allowed_filters.keys():
@@ -139,4 +140,4 @@ if __name__ == '__main__':
     #     print(mb)
     info = get_further_information('https://motherboarddb.com/motherboards/1463/ROG%20Strix%20B450-F%20Gaming/')
     for key, value in info.items():
-        print(key, value, '--'*15, sep='\n')
+        print(key, value, '--' * 15, sep='\n')

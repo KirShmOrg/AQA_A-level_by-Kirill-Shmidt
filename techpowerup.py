@@ -1,17 +1,14 @@
-import time
-
-import requests
 from bs4 import BeautifulSoup
 from bs4.element import Tag
-import json
 
-from class_database import db
+from class_database import db, Components
 from custom_request import request_get_v2
 from component_classes.class_gpu import PCIe
 from component_classes.class_ram import RAM
 
+
 BASE_URL = 'https://www.techpowerup.com'
-LINKS = {'CPU': BASE_URL + "/cpu-specs/", "GPU": BASE_URL + "/gpu-specs/"}
+LINKS = {Components.CPU.value: BASE_URL + "/cpu-specs/", Components.GPU.value: BASE_URL + "/gpu-specs/"}
 
 
 def parse_labels(website_link: str) -> list:
@@ -32,9 +29,9 @@ def parse_labels(website_link: str) -> list:
     return labels
 
 
-def get_labels_with_values(hardware_name: str) -> dict[str, list]:
-    if hardware_name.upper() not in LINKS.keys():
-        return {'error': f'updating {hardware_name} is not possible'}
+def get_labels_with_values(component: Components) -> dict[Components, list]:
+    if component.value not in LINKS.keys():
+        return {'error': f'updating {component} is not possible'}
 
     def remove_parenthesis(string: str) -> str:
         # TODO: figure our whether we need this at all
@@ -45,7 +42,7 @@ def get_labels_with_values(hardware_name: str) -> dict[str, list]:
         return string
 
     result = {}
-    for label in parse_labels(LINKS[hardware_name]):
+    for label in parse_labels(LINKS[component.value]):
         siblings = []
         for sibling in label.next_siblings:
             if type(sibling) == Tag:
@@ -61,30 +58,15 @@ def get_labels_with_values(hardware_name: str) -> dict[str, list]:
     return result
 
 
-def get_component_list(component_name: str,
-                       sort_by: str = 'name',
-                       # mfgr: str = None,
-                       # released: int = None,
-                       # is_mobile: bool = None,
-                       # is_server: bool = None,
-                       # tdp: int = None,
-                       # nCores: int = None,
-                       # nThreads: int = None,
-                       # generation: str = None,
-                       # socket: str = None,
-                       # codename: str = None,
-                       # process_nm: int = None,
-                       # is_multi_unlocked: bool = None,
-                       # has_igp: bool = None,
-                       params: dict = None
-                       ) -> dict[str, list]:
-    if component_name.upper() not in LINKS.keys():
-        return {'error': f'updating {component_name} is not possible'}
+# noinspection PyTypeChecker
+def get_component_list(component: Components, params: dict = None, sort_by: str = 'name') -> dict[Components, list]:
+    if component.value not in LINKS.keys():
+        return {'error': f'updating {component} is not possible'}
     if sort_by not in ['name', 'released', 'generation']:
         return {'error': f"You can't sort by {sort_by}"}
 
     if params is not None:
-        allowed_filters = db.get_filters(component_name)[0]
+        allowed_filters = db.get_filters(component)[component]
 
         for filter_name, value in params.items():
             if filter_name not in allowed_filters.keys():
@@ -99,7 +81,7 @@ def get_component_list(component_name: str,
         query += f'sort={sort_by}'
     else:
         query = ""
-    response = request_get_v2(f"{LINKS[component_name]}{query}")
+    response = request_get_v2(f"{LINKS[component.value]}{query}")
     page = BeautifulSoup(response.text, features='html.parser')
 
     table = page.find('div', id="list").find('table')
@@ -113,17 +95,17 @@ def get_component_list(component_name: str,
     result = []
     for row in table.find_all('tr')[2:]:
         count = 0
-        component = {}
+        tpu_component = {}
         link = row.find('a').attrs['href']
-        component.update({"Link": BASE_URL + link})
+        tpu_component.update({"Link": BASE_URL + link})
         for element in row.contents:
             if type(element) != Tag:
                 continue
-            component.update({headers[count]: element.text.replace("\n", "").strip()})
+            tpu_component.update({headers[count]: element.text.replace("\n", "").strip()})
             count += 1
-        result.append(component)
+        result.append(tpu_component)
 
-    return {component_name.upper(): result}
+    return {component: result}
 
 
 def get_cpu_socket(cpu: dict) -> str:

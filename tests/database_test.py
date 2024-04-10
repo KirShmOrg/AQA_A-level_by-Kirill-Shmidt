@@ -1,6 +1,8 @@
-from class_database import db
+
 from time import sleep
 from time import perf_counter
+
+from class_database import db, Components
 
 
 def test_cpu() -> None:
