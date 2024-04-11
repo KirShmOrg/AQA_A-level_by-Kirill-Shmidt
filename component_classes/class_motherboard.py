@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 
 from component_classes.class_ram import RAM
-from component_classes.class_gpu import GPU, PCIe
+from component_classes.class_gpu import PCIe
 
 
 @dataclass

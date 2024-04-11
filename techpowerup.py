@@ -1,14 +1,14 @@
-from bs4 import BeautifulSoup
+from typing import Union
+
 from bs4.element import Tag
 
-from class_database import db, Components
-from custom_request import request_get_v2
+from class_database import db, Components, ErrorMessage
 from component_classes.class_gpu import PCIe
 from component_classes.class_ram import RAM
-
+from custom_request import page_from_link
 
 BASE_URL = 'https://www.techpowerup.com'
-LINKS = {Components.CPU.value: BASE_URL + "/cpu-specs/", Components.GPU.value: BASE_URL + "/gpu-specs/"}
+LINKS = {Components.CPU: BASE_URL + "/cpu-specs/", Components.GPU: BASE_URL + "/gpu-specs/"}
 
 
 def parse_labels(website_link: str) -> list:
@@ -20,7 +20,7 @@ def parse_labels(website_link: str) -> list:
                     labels.pop(labels.index(label))
 
     labels = []
-    main_page = BeautifulSoup(request_get_v2(website_link).content, features='html.parser')
+    main_page = page_from_link(website_link)
     for fieldset in main_page.find_all('fieldset'):
         if 'filters' in fieldset['class']:
             labels = fieldset.find_all_next('label')
@@ -29,20 +29,13 @@ def parse_labels(website_link: str) -> list:
     return labels
 
 
-def get_labels_with_values(component: Components) -> dict[Components, list]:
-    if component.value not in LINKS.keys():
-        return {'error': f'updating {component} is not possible'}
+def get_labels_with_values(component: Components) -> Union[ErrorMessage, dict[Components, list]]:
+    if component not in LINKS.keys():
+        error = ErrorMessage(f'updating {component} is not possible')
 
-    def remove_parenthesis(string: str) -> str:
-        # TODO: figure our whether we need this at all
-        start = string.find('(')
-        end = string.find(')')
-        if start != -1 and end != -1 and end > start:
-            return string[0:start].strip()
-        return string
 
     result = {}
-    for label in parse_labels(LINKS[component.value]):
+    for label in parse_labels(LINKS[component]):
         siblings = []
         for sibling in label.next_siblings:
             if type(sibling) == Tag:
@@ -58,21 +51,17 @@ def get_labels_with_values(component: Components) -> dict[Components, list]:
     return result
 
 
-# noinspection PyTypeChecker
-def get_component_list(component: Components, params: dict = None, sort_by: str = 'name') -> dict[Components, list]:
-    if component.value not in LINKS.keys():
-        return {'error': f'updating {component} is not possible'}
-    if sort_by not in ['name', 'released', 'generation']:
-        return {'error': f"You can't sort by {sort_by}"}
-
+def generate_link(component: Components, params: dict, sort_by: str = 'name') -> Union[ErrorMessage, str]:
     if params is not None:
-        allowed_filters = db.get_filters(component)[component]
+        allowed_filters = db.get_single_filter(component)
 
         for filter_name, value in params.items():
             if filter_name not in allowed_filters.keys():
-                return {'error': f"There is no such filter as {filter_name}"}
+                error = ErrorMessage(f"There is no such filter as {filter_name}")
+                return error
             elif value not in allowed_filters[filter_name]:
-                return {'error': f"There is no such option as {value} in filter {filter_name}"}
+                error = ErrorMessage(f"There is no such option as {value} in filter {filter_name}")
+                return error
         # up to here, the values are definitely correct
 
         query = "?"
@@ -81,8 +70,20 @@ def get_component_list(component: Components, params: dict = None, sort_by: str 
         query += f'sort={sort_by}'
     else:
         query = ""
-    response = request_get_v2(f"{LINKS[component.value]}{query}")
-    page = BeautifulSoup(response.text, features='html.parser')
+    return f"{LINKS[component]}{query}"
+
+
+def fetch_component_list(component: Components, params: dict = None, sort_by: str = 'name') -> \
+        Union[ErrorMessage, dict[Components, list]]:
+    if component not in LINKS.keys():
+        error = ErrorMessage(f'Fetching {component} is not possible')
+        return error
+    if sort_by not in ['name', 'released', 'generation']:
+        error = ErrorMessage(f"You can't sort by {sort_by}")
+        return error
+
+    link = generate_link(component=component, params=params, sort_by=sort_by)
+    page = page_from_link(link)
 
     table = page.find('div', id="list").find('table')
     headers_row = table.find('thead', {"class": ['colheader']}).find('tr')
@@ -120,7 +121,7 @@ def get_further_cpu_data(link: str) -> dict:
 
     deep_data = {'pcie': None, 'ram': None}
 
-    page = BeautifulSoup(request_get_v2(link).text, features='html.parser')
+    page = page_from_link(link)
 
     further_pcie = PCIe('Gen 0.0 x0')
     pcie_string = get_td_text_by_th('PCI-Express:')
@@ -139,9 +140,8 @@ def get_further_cpu_data(link: str) -> dict:
     return deep_data
 
 
-def get_gpu_tdp(gpu_link: str, error_count: int = 0) -> int:
-    response = request_get_v2(gpu_link)
-    page = BeautifulSoup(response.text, features='html.parser')
+def get_gpu_tdp(gpu_link: str) -> int:
+    page = page_from_link(gpu_link, sleep_time=3)
     return int(page.find('dt', string='TDP').parent.find('dd').text.split()[0])
 
 

@@ -65,6 +65,7 @@ def correct_wattage(psu: PSU, cpu: CPU, gpu: GPU, ram_list: list[RAM]) -> bool:
     return psu.wattage > cpu.tdp_w + gpu.tdp_w + ram_consumption
 
 
+# Finished
 def check_all(cpu: CPU, gpu: GPU, ram_list: list[RAM], mb: Motherboard, psu: PSU) -> bool:
     return correct_wattage(psu=psu, cpu=cpu, gpu=gpu, ram_list=ram_list) and correct_sockets(cpu=cpu, mb=mb) \
         and correct_ram(ram_list=ram_list, mb=mb, cpu=cpu)
@@ -76,7 +77,8 @@ if __name__ == '__main__':
     print(f"{test_cpu = }")
     test_gpu = db.get_gpu_list({'mfgr': 'NVIDIA', 'gpu': 'GP104', 'generation': "GeForce 10"})[0]
     print(f"{test_gpu = }")
-    test_ram = db.get_ram_list({'size': '8 GB', 'speed': '2666 MHz', 'ddr_type': 'DDR4 SDRAM', 'form factor': 'DIMM'})[0]
+    # noinspection PyPep8
+    test_ram = db.get_ram_list({'size': '8 GB', 'speed': '2666 MHz', 'ddr type': 'DDR4 SDRAM', 'form factor': 'DIMM'})[0]
     print(f"{test_ram = }")
     test_psu = db.get_psu_list({'wattage': '300 W'})[0]
     print(f"{test_psu = }")

@@ -1,5 +1,3 @@
-import datetime
-import time
 from dataclasses import dataclass, field
 
 
@@ -97,7 +95,6 @@ class GPU:
         self.release_year = int(self.all_specs['Released'].split()[-1])
 
     def __fetch_tdp(self) -> int:
-        time.sleep(3)  # it is bad, but we have to respect the server
         from techpowerup import get_gpu_tdp
         return get_gpu_tdp(self.further_link)
 

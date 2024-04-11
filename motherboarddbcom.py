@@ -1,19 +1,16 @@
+from typing import Union
 import time
 
-from bs4 import BeautifulSoup
 from bs4.element import Tag
 from class_database import db, Components
-
-from custom_request import request_get_v2
-
+from custom_request import page_from_link
 
 BASE_URL = "https://motherboarddb.com/motherboards"
 
 
 def parse_filters() -> dict:
     result = {}
-    response = request_get_v2(f"{BASE_URL}")
-    page = BeautifulSoup(response.text, features="html.parser")
+    page = page_from_link(BASE_URL)
     selects_list = page.find_all("select", {'class': ["select2-widget", "form-control"]})
     for select in selects_list:
         temp = {}
@@ -25,7 +22,25 @@ def parse_filters() -> dict:
     return result
 
 
-def parse_motherboards_list(params: dict) -> list[dict[str, str]]:
+def generate_link_and_query(params: dict) -> dict[str, str]:
+    # filters_time_start = time.perf_counter()
+    allowed_filters = db.get_single_filter(Components.MB)
+    # TODO: allow the "value" variable to be a list
+    for filter_name, value in params.items():
+        if filter_name not in allowed_filters.keys():
+            return {'error': f'There is no such filter as {filter_name}'}
+        elif value not in allowed_filters[filter_name].keys():
+            return {'error': f'There is no such option as {value} in {filter_name}'}
+    # print(f"Parsing filters: {time.perf_counter() - filters_time_start}")
+
+    query = "?"
+    for filter_name, value in params.items():
+        query += f'{filter_name}={allowed_filters[filter_name][value]}&'
+    query += 'page=1'
+    return {"link": f"{BASE_URL}/ajax/table/{query}&dt=list", 'query': query}
+
+
+def parse_motherboards_list(params: dict) -> Union[dict, list[dict[str, str]]]:
     def get_number_of_pages() -> int:
         nonlocal page
         pagination_options: list[Tag] = page.find('ul', {'class': 'pagination'}).find_all('li', {'class': 'page-item'})
@@ -36,35 +51,21 @@ def parse_motherboards_list(params: dict) -> list[dict[str, str]]:
                 max_page = int(li.text)
         return max_page
 
-    # filters_time_start = time.perf_counter()
-    allowed_filters = db.get_filters(Components.MB)[Components.MB]
-    # TODO: allow the "value" variable to be a list
-    for filter_name, value in params.items():
-        if filter_name not in allowed_filters.keys():
-            return {'error': f'There is no such filter as {filter_name}'}
-        elif value not in allowed_filters[filter_name].keys():
-            return {'error': f'There is no such option as {value} in {filter_name}'}
-
-    # print(f"Parsing filters: {time.perf_counter() - filters_time_start}")
-
+    temp_dict = generate_link_and_query(params)
+    link, query = temp_dict['link'], temp_dict['query']
     # request_time_start = time.perf_counter()
-    query = "?"
-    for filter_name, value in params.items():
-        query += f'{filter_name}={allowed_filters[filter_name][value]}&'
-    query += 'page=1'
-    response = request_get_v2(f"{BASE_URL}/ajax/table/{query}&dt=list")
-    page = BeautifulSoup(response.text, features="html.parser")
+    page = page_from_link(link)
     # print(f"Receiving a page: {time.perf_counter() - request_time_start}")
 
     # parsing_time_start = time.perf_counter()
     result = {}
     for page_number in range(1, get_number_of_pages() + 1):
-        if page_number > 1:
-            page = BeautifulSoup(request_get_v2(f"{BASE_URL}/ajax/table/{query[0:-1]}{page_number}&dt=list").text,
-                                 features="html.parser")
+        if page_number > 1:  # it's very bold to assume that pages only go to a single digit lol (next line, query)
+            page = page_from_link(f"{BASE_URL}/ajax/table/{query[0:-1]}{page_number}&dt=list")
         names = [tag.text for tag in page.find_all('h4')]
         links = [tag.parent.attrs['href'] for tag in page.find_all('h4')]
         count = 0
+        temp = []
         for ul in page.find_all('ul', attrs={'class': ['list-unstyled']}):
             if count // 2 == 0:
                 temp = []
@@ -88,6 +89,7 @@ def parse_motherboards_list(params: dict) -> list[dict[str, str]]:
                 specs.update({key: None})
             else:
                 specs.update({key: value.strip()})
+        # noinspection PyUnboundLocalVariable
         specs.update({'Link': "https://motherboarddb.com" + links[names.index(mb_name)]})
         result.update({mb_name: specs})
 
@@ -107,13 +109,13 @@ def get_mb_socket(motherboard: dict) -> str:
 
 
 def get_further_information(link: str) -> dict:
-    def parse_expansions(card: Tag) -> list[str]:
-        return [li.text.strip() for li in card.find('ul') if li.text != '\n']
+    def parse_expansions(card_: Tag) -> list[str]:
+        return [li.text.strip() for li in card_.find('ul') if li.text != '\n']
 
-    page = BeautifulSoup(request_get_v2(link).text, features='html.parser')
+    page = page_from_link(link)
     cards_dict = {}
     headers_whitelist = [text.lower() for text in ['General Information', 'Expansion Slots', 'Memory']]
-    # we might want to add M.2 Slots
+    # I might want to add M.2 Slots
     for card in page.find_all('div', {'class': 'card'}):
         card_header = card.find('div', {'class': 'card-header'}).text.lower()
         if card_header not in headers_whitelist:

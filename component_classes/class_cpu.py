@@ -1,3 +1,4 @@
+from typing import Union
 from dataclasses import dataclass, field
 
 from component_classes.class_gpu import PCIe
@@ -37,7 +38,7 @@ class CPU:
         self.convert_link()
 
     # TODO: might as well just write down default values as field property
-    def split_key_with_checks(self, key: str, split_by: str = ' ') -> list:
+    def split_key_with_checks(self, key: str, split_by: str = ' ') -> Union[list, None]:
         if key not in self.all_specs:
             return None
         string_value = self.all_specs[key]
