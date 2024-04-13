@@ -7,6 +7,7 @@ from component_classes.class_gpu import PCIe
 from component_classes.class_ram import RAM
 from custom_request import page_from_link
 
+
 BASE_URL = 'https://www.techpowerup.com'
 LINKS = {Components.CPU: BASE_URL + "/cpu-specs/", Components.GPU: BASE_URL + "/gpu-specs/"}
 

@@ -8,7 +8,10 @@ from class_database import db
 
 # Finished
 def correct_sockets(cpu: CPU, mb: Motherboard) -> bool:
-    return cpu.socket == mb.socket
+    if cpu.socket != mb.socket:
+        print("The motherboard and CPU have different sockets!")
+        return False
+    return True
 
 
 # Finished
@@ -62,25 +65,28 @@ def correct_gpu(gpu: GPU, mb: Motherboard, cpu: CPU) -> bool:
 def correct_wattage(psu: PSU, cpu: CPU, gpu: GPU, ram_list: list[RAM]) -> bool:
     # NOTE: as a rule of thumb, crucial.com recommends 3 Watts per every 8 GB
     ram_consumption = sum([ram.size_gb for ram in ram_list]) * 3 / 8
-    return psu.wattage > cpu.tdp_w + gpu.tdp_w + ram_consumption
+    if psu.wattage > cpu.tdp_w + gpu.tdp_w + ram_consumption:
+        print("Your PSU can't output enough wattage for this system!")
+        return False
+    return True
 
 
 # Finished
 def check_all(cpu: CPU, gpu: GPU, ram_list: list[RAM], mb: Motherboard, psu: PSU) -> bool:
-    return correct_wattage(psu=psu, cpu=cpu, gpu=gpu, ram_list=ram_list) and correct_sockets(cpu=cpu, mb=mb) \
-        and correct_ram(ram_list=ram_list, mb=mb, cpu=cpu)
+    return correct_sockets(cpu=cpu, mb=mb) and correct_ram(ram_list=ram_list, mb=mb, cpu=cpu) and \
+        correct_wattage(psu=psu, cpu=cpu, gpu=gpu, ram_list=ram_list)
 
 
 if __name__ == '__main__':
-    test_cpu = db.get_cpu_list({'tdp': '65 W', 'socket': 'AMD Socket AM4'})[0]
+    test_cpu = db.get_cpu_list({'tdp': '65 W', 'socket': 'AMD Socket AM5'})[0]
     test_cpu.convert_further_information()
     print(f"{test_cpu = }")
     test_gpu = db.get_gpu_list({'mfgr': 'NVIDIA', 'gpu': 'GP104', 'generation': "GeForce 10"})[0]
     print(f"{test_gpu = }")
     # noinspection PyPep8
-    test_ram = db.get_ram_list({'size': '8 GB', 'speed': '2666 MHz', 'ddr type': 'DDR4 SDRAM', 'form factor': 'DIMM'})[0]
+    test_ram = db.get_ram_list({'memory size': '8 GB', 'memory speed': '2666 MHz', 'Memory Technology': 'DDR4 SDRAM', 'form factor': 'DIMM'})[0]
     print(f"{test_ram = }")
-    test_psu = db.get_psu_list({'wattage': '300 W'})[0]
+    test_psu = db.get_psu_list({'output power': '300 W'})[0]
     print(f"{test_psu = }")
     test_mb = db.get_mb_list({'socket': "AM4", 'ram_type': 'DDR4', 'manufacturer': 'Biostar'})[0]
     test_mb.convert_further_data()

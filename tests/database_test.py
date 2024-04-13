@@ -41,8 +41,8 @@ def test_gpu() -> None:
 def test_ram() -> None:
     test_params = {
         'manufacturer': 'Samsung',
-        'size': '8 GB',
-        'ddr type': 'DDR4 SDRAM'
+        'memory size': '8 GB',
+        'memory technology': 'DDR4 SDRAM'
     }
     print(provantage_link(Components.RAM, test_params))
     ram_list = db.get_ram_list(test_params)
@@ -55,8 +55,8 @@ def test_ram() -> None:
 def test_psu() -> None:
     test_params = {
         'manufacturer': "EVGA",
-        'modular': 'yes',
-        'power': '650 W'
+        # 'modular': 'yes',
+        'output power': '650 W'
     }
     print(provantage_link(Components.PSU, test_params))
     psu_list = db.get_psu_list(test_params)

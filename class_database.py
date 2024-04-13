@@ -38,6 +38,7 @@ def check_components(*components) -> None:
 
 
 class Database:
+
     def __init__(self):
         self._cpu_filters_location = self.__get_full_filepath("all_jsons/techpowerup_cpu_filters.json")
         self._gpu_filters_location = self.__get_full_filepath("all_jsons/techpowerup_gpu_filters.json")
