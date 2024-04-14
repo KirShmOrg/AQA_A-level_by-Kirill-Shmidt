@@ -29,7 +29,8 @@ class ComponentsWithParams(TypedDict):
     params: dict[str, str]
 
 
-def check_components(*components) -> None:
+def check_components(*components: Components) -> None:
+    print(components)
     for component in components:
         if type(component) != Components:
             print(component)
@@ -74,7 +75,7 @@ class Database:
             return json.load(file)
 
     def update_filters(self, *components_to_update: Components) -> None:
-        check_components(components_to_update)
+        check_components(*components_to_update)
 
         from techpowerup import get_labels_with_values as techpowerup_filters
         from motherboarddbcom import parse_filters as mbdb_filters
@@ -173,10 +174,11 @@ class Database:
 db = Database()
 
 if __name__ == '__main__':
-    # db.update_filters(*list(Components))
     start = time.perf_counter()
 
-    for key, value in db.get_multiple_filters(*list(Components)).items():
-        print(key, value, '--' * 15, sep='\n')
+    db.update_filters(*list(Components))
+
+    # for key, value in db.get_multiple_filters(*list(Components)).items():
+    #     print(key, value, '--' * 15, sep='\n')
 
     print(time.perf_counter() - start)

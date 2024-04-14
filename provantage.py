@@ -13,12 +13,16 @@ from component_classes.class_ram import RAM
 from component_classes.class_psu import PSU
 from class_database import Components
 
+from time import sleep
+
+
 BASE_URL = "https://www.provantage.com/service/searchsvcs"
 LINKS = {Components.RAM: BASE_URL + '/B-CRAMM', Components.PSU: BASE_URL + '/B-PPSUP'}
 PRODUCT_TYPES = {Components.RAM: 'RAM Module', Components.PSU: "Power Supply"}
 
 
-def parse_filters(component: Components) -> dict[str]:
+# returns dict[str, str] if it's manufacturer, and list if it's any other filter
+def parse_filters(component: Components) -> dict[str, Union[list, dict[str, str]]]:
     result = {}
 
     def elements_id_starts_with(element: str, id_starts: str) -> list[WebElement]:
@@ -30,23 +34,27 @@ def parse_filters(component: Components) -> dict[str]:
         return text[0: text.rfind('(')].strip()
 
     driver = Chrome()
-    driver.maximize_window()
+    # driver.maximize_window()
     driver.get(LINKS[component])
+    driver.implicitly_wait(5)
 
     more_features_table = driver.find_element(by=By.ID, value='OPENALL2')  # it's a <table> element
     more_features_table.click()
     all_headers = elements_id_starts_with(element='table', id_starts='OP')
+    sleep(1)
 
     body = driver.find_element(by=By.CSS_SELECTOR, value='body')
     body.send_keys(Keys.PAGE_UP)
     for _ in range(3):
         body.send_keys(Keys.ARROW_DOWN)
+    sleep(1)
     # up to here, all the options should be opened and the page is scrolled to almost the top
 
     for header in all_headers:
         try:
             header.click()
-        except:
+            sleep(0.1)
+        except:  # TODO: debug the exception handling. It all took too much time, and just ignoring the error works okay
             pass
     # after clicking, the id changes from OP (press to OPen) to CL (press to CLose)
     all_headers = elements_id_starts_with(element='table', id_starts='CL')
@@ -178,27 +186,32 @@ def get_component_list(component: Components, params: dict, as_objects: bool = T
 
 
 if __name__ == '__main__':
-    test_cases = {
-        Components.RAM: {
-            'manufacturer': 'AddOn',
-            'memory size': '16 GB',
-            'memory speed': '2666 MHz',
-            'memory technology': 'DDR4 SDRAM'
-        },
-        Components.PSU: {
-            'manufacturer': "EVGA",
-            # 'modular': 'yes',
-            'output power': '650 W'
-        }
-    }
-    print(generate_link(Components.RAM, test_cases[Components.RAM]))
-    for ram in get_component_list(component=Components.RAM, params=test_cases[Components.RAM]):
-        print(ram)
-    print(generate_link(Components.PSU, test_cases[Components.PSU]))
-    for psu in get_component_list(component=Components.PSU, params=test_cases[Components.PSU]):
-        print(psu)
+    # test_cases = {
+    #     Components.RAM: {
+    #         'manufacturer': 'AddOn',
+    #         'memory size': '16 GB',
+    #         'memory speed': '2666 MHz',
+    #         'memory technology': 'DDR4 SDRAM'
+    #     },
+    #     Components.PSU: {
+    #         'manufacturer': "EVGA",
+    #         # 'modular': 'yes',
+    #         'output power': '650 W'
+    #     }
+    # }
+    # print(generate_link(Components.RAM, test_cases[Components.RAM]))
+    # for ram in get_component_list(component=Components.RAM, params=test_cases[Components.RAM]):
+    #     print(ram)
+    # print(generate_link(Components.PSU, test_cases[Components.PSU]))
+    # for psu in get_component_list(component=Components.PSU, params=test_cases[Components.PSU]):
+    #     print(psu)
 
-    # filters = parse_filters(Components.RAM)
-    # with open('all_jsons/test.json', 'w') as file:
-    #     json.dump(filters, file, indent=4)
+    filters = {}
+    for component in [Components.RAM, Components.PSU]:
+        filter_ = parse_filters(component)
+        filters[component.value] = filter_
+    # filters = parse_filters(Components.PSU)
+    with open('all_jsons/test.json', 'w') as file:
+        json.dump(filters, file, indent=4)
+        file.truncate()
     # print(filters)

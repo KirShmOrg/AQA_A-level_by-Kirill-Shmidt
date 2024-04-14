@@ -17,6 +17,7 @@ def parse_labels(website_link: str) -> list:
         nonlocal labels
         for label in labels:
             if 'title' in label.attrs:
+                label: Tag  # for typechecker
                 if label['title'] == 'Close':
                     labels.pop(labels.index(label))
 
@@ -33,7 +34,7 @@ def parse_labels(website_link: str) -> list:
 def get_labels_with_values(component: Components) -> Union[ErrorMessage, dict[Components, list]]:
     if component not in LINKS.keys():
         error = ErrorMessage(f'updating {component} is not possible')
-
+        return error
 
     result = {}
     for label in parse_labels(LINKS[component]):
@@ -91,6 +92,7 @@ def fetch_component_list(component: Components, params: dict = None, sort_by: st
     headers = []
     for header in headers_row.contents:
         if type(header) == Tag:
+            header: Tag  # for typechecker
             if header.name == 'th':
                 headers.append(header.text)
 
