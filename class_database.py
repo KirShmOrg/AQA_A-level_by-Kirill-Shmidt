@@ -30,7 +30,6 @@ class ComponentsWithParams(TypedDict):
 
 
 def check_components(*components: Components) -> None:
-    print(components)
     for component in components:
         if type(component) != Components:
             print(component)
