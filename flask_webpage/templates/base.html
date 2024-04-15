@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 {% extends "bootstrap/base.html" %}
 <html>
 <head>
@@ -5,7 +6,6 @@
 </head>
 
 <body>
-{% block navbar %}
 <nav class="navbar navbar-default">
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
@@ -59,10 +59,8 @@
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
 </nav>
-{% endblock %}
-
+<p>this is the body</p>
 {% block content %}
-<p>This is the body</p>
 {% endblock %}
 </body>
 </html>
