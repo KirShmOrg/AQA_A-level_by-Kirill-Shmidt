@@ -4,12 +4,6 @@ import time
 from enum import Enum
 from dataclasses import dataclass
 
-from component_classes.class_ram import RAM
-from component_classes.class_psu import PSU
-from component_classes.class_cpu import CPU
-from component_classes.class_gpu import GPU
-from component_classes.class_motherboard import Motherboard
-
 
 @dataclass(frozen=True)
 class ErrorMessage:
@@ -35,6 +29,9 @@ def check_components(*components: Components) -> None:
             print(component)
             raise TypeError(f"A component should be of type {Components}, not {type(component)}")
     return
+
+
+from component_classes import CPU, GPU, Motherboard, RAM, PSU, ALL_COMPONENTS_TYPES
 
 
 class Database:
@@ -130,27 +127,27 @@ class Database:
         return [GPU(gpu) for gpu in component_list[Components.GPU]]
 
     @staticmethod
-    def get_mb_list(params: dict) -> list[Motherboard]:
+    def get_mb_list(params: dict) -> Union[list[Motherboard], None]:
         from motherboarddbcom import parse_motherboards_list
 
         mb_list = parse_motherboards_list(params=params)
         return [Motherboard(mb) for mb in mb_list]
 
     @staticmethod
-    def get_ram_list(params: dict) -> list[RAM]:
+    def get_ram_list(params: dict) -> Union[list[RAM], None]:
         from provantage import get_component_list, Components
 
         return get_component_list(component=Components.RAM, params=params, as_objects=True)
 
     @staticmethod
-    def get_psu_list(params: dict) -> list[PSU]:
+    def get_psu_list(params: dict) -> Union[list[PSU], None]:
         from provantage import get_component_list, Components
 
         return get_component_list(component=Components.PSU, params=params, as_objects=True)
 
     def get_multiple_components(self, components_with_params: ComponentsWithParams) -> \
-            dict[Components, Union[list, None]]:
-        check_components(components_with_params.keys())
+            dict[Components, Union[list[ALL_COMPONENTS_TYPES], None]]:
+        check_components(*components_with_params.keys())
         result = {}
         for component, params in components_with_params.keys():
             if component == Components.CPU:
