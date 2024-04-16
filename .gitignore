@@ -1,5 +1,4 @@
 **/junk_test.py
-!inspections_and_styles/**/*.xml
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
