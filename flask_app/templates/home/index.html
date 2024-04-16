@@ -1,5 +1,26 @@
 {% extends "base.html" %}
+{% from "bootstrap5/form.html" import render_form %}
 
-{% block content %}
-<p>ola, {{name}} </p>
+{% block app_content %}
+
+{% if username %}
+<h1>Hello, {{ username }}</h1>
+{% else %}
+<h1>Hello, guest</h1>
+{% endif %}
+<hr>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul class="flashes">
+  {% for category, message in messages %}
+  <li class="{{category}}">{{message}}</li>
+  {% endfor %}
+</ul>
+<hr>
+{% endif %}
+{% endwith %}
+
+{{ render_form(search_form) }}
+
 {% endblock %}

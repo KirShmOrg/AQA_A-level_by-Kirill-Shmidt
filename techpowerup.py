@@ -1,5 +1,6 @@
 from typing import Union
 
+from bs4 import BeautifulSoup
 from bs4.element import Tag
 
 from class_database import db, Components, ErrorMessage
@@ -75,6 +76,34 @@ def generate_link(component: Components, params: dict, sort_by: str = 'name') ->
     return f"{LINKS[component]}{query}"
 
 
+def convert_table_to_list(table: Tag) -> list:
+    headers_row = table.find('thead', {"class": ['colheader']}).find('tr')
+    headers = []
+    for header in headers_row.contents:
+        if type(header) == Tag:
+            header: Tag  # for typechecker
+            if header.name == 'th':
+                headers.append(header.text)
+
+    result = []
+    all_trs = table.find_all('tr')
+    while 'name' in all_trs[0].text.strip().lower():
+        all_trs.pop(0)
+    for row in all_trs:
+        count = 0
+        tpu_component = {}
+        link = row.find('a').attrs['href']
+        tpu_component.update({"Link": BASE_URL + link})
+        for element in row.contents:
+            if type(element) != Tag:
+                continue
+            tpu_component.update({headers[count]: element.text.replace("\n", "").strip()})
+            count += 1
+        result.append(tpu_component)
+
+    return result
+
+
 def fetch_component_list(component: Components, params: dict = None, sort_by: str = 'name') -> \
         Union[ErrorMessage, dict[Components, list]]:
     if component not in LINKS.keys():
@@ -88,26 +117,8 @@ def fetch_component_list(component: Components, params: dict = None, sort_by: st
     page = page_from_link(link)
 
     table = page.find('div', id="list").find('table')
-    headers_row = table.find('thead', {"class": ['colheader']}).find('tr')
-    headers = []
-    for header in headers_row.contents:
-        if type(header) == Tag:
-            header: Tag  # for typechecker
-            if header.name == 'th':
-                headers.append(header.text)
-
-    result = []
-    for row in table.find_all('tr')[2:]:
-        count = 0
-        tpu_component = {}
-        link = row.find('a').attrs['href']
-        tpu_component.update({"Link": BASE_URL + link})
-        for element in row.contents:
-            if type(element) != Tag:
-                continue
-            tpu_component.update({headers[count]: element.text.replace("\n", "").strip()})
-            count += 1
-        result.append(tpu_component)
+    result = convert_table_to_list(table=table)
+    # TODO: do some checking maybe? idk
 
     return {component: result}
 
@@ -115,6 +126,13 @@ def fetch_component_list(component: Components, params: dict = None, sort_by: st
 def get_cpu_socket(cpu: dict) -> str:
     return cpu['Socket'][len('Socket '):]  # this is very error-prone
     # TODO: make a proper socket class or sth
+
+
+def get_component_by_name(component: Components, name: str) -> list:
+    link = f"{LINKS[component]}?ajaxsrch={name}"
+    page = page_from_link(link)
+    table = page.find('table')
+    return convert_table_to_list(table=table)
 
 
 def get_further_cpu_data(link: str) -> dict:
@@ -150,4 +168,9 @@ def get_gpu_tdp(gpu_link: str) -> int:
 
 if __name__ == '__main__':
     # print(get_gpu_tdp('https://www.techpowerup.com/gpu-specs/radeon-rx-7600-xt.c4190'))
-    print(get_further_cpu_data('https://www.techpowerup.com/cpu-specs/ryzen-5-3600.c2132'))
+    # print(get_further_cpu_data('https://www.techpowerup.com/cpu-specs/ryzen-5-3600.c2132'))
+    for cpu in get_component_by_name(Components.CPU, 'Ryzen'):
+        print(cpu)
+    # for gpu in get_component_by_name(Components.GPU, '4090'):
+    #     print(gpu)
+    pass

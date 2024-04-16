@@ -18,6 +18,11 @@ class Components(Enum):
     PSU = 'PSU'
 
 
+class FindBy(Enum):
+    Filters = 'Filters'
+    SearchStr = 'SearchStr'
+
+
 class ComponentsWithParams(TypedDict):
     component: Components
     params: dict[str, str]
@@ -105,7 +110,7 @@ class Database:
         return result
 
     @staticmethod
-    def get_cpu_list(params: dict) -> Union[list[CPU], None]:
+    def __get_cpu_list(params: dict) -> Union[list[CPU], None]:
         from techpowerup import fetch_component_list
 
         component_list = fetch_component_list(Components.CPU, params=params, sort_by='name')
@@ -116,7 +121,21 @@ class Database:
         return [CPU(cpu) for cpu in component_list[Components.CPU]]
 
     @staticmethod
-    def get_gpu_list(params: dict) -> Union[list[GPU], None]:
+    def __get_cpu_list_by_name(cpu_name: str) -> Union[list[CPU], None]:
+        from techpowerup import get_component_by_name
+
+        cpu_list = [CPU(cpu) for cpu in get_component_by_name(Components.CPU, cpu_name)]
+        return cpu_list
+
+    @staticmethod
+    def __get_gpu_list_by_name(gpu_name: str) -> Union[list[GPU], None]:
+        from techpowerup import get_component_by_name
+
+        gpu_list = [GPU(gpu) for gpu in get_component_by_name(Components.GPU, gpu_name)]
+        return gpu_list
+
+    @staticmethod
+    def __get_gpu_list(params: dict) -> Union[list[GPU], None]:
         from techpowerup import fetch_component_list
 
         component_list = fetch_component_list(Components.GPU, params=params, sort_by='name')
@@ -127,44 +146,57 @@ class Database:
         return [GPU(gpu) for gpu in component_list[Components.GPU]]
 
     @staticmethod
-    def get_mb_list(params: dict) -> Union[list[Motherboard], None]:
+    def __get_mb_list(params: dict) -> Union[list[Motherboard], None]:
         from motherboarddbcom import parse_motherboards_list
 
         mb_list = parse_motherboards_list(params=params)
         return [Motherboard(mb) for mb in mb_list]
 
     @staticmethod
-    def get_ram_list(params: dict) -> Union[list[RAM], None]:
+    def __get_ram_list(params: dict) -> Union[list[RAM], None]:
         from provantage import get_component_list, Components
 
         return get_component_list(component=Components.RAM, params=params, as_objects=True)
 
     @staticmethod
-    def get_psu_list(params: dict) -> Union[list[PSU], None]:
+    def __get_psu_list(params: dict) -> Union[list[PSU], None]:
         from provantage import get_component_list, Components
 
         return get_component_list(component=Components.PSU, params=params, as_objects=True)
 
-    def get_multiple_components(self, components_with_params: ComponentsWithParams) -> \
-            dict[Components, Union[list[ALL_COMPONENTS_TYPES], None]]:
-        check_components(*components_with_params.keys())
-        result = {}
-        for component, params in components_with_params.keys():
+    def get_one_component_list(self, component: Components, by: FindBy, value: Union[dict[str, str], str]) -> \
+            Union[list[ALL_COMPONENTS_TYPES], None]:
+        check_components(component)
+        if by == FindBy.Filters:
             if component == Components.CPU:
-                value_ = self.get_cpu_list(params)
+                result = self.__get_cpu_list(value)
             elif component == Components.GPU:
-                value_ = self.get_gpu_list(params)
+                result = self.__get_gpu_list(value)
             elif component == Components.MB:
-                value_ = self.get_mb_list(params)
+                result = self.__get_mb_list(value)
             elif component == Components.RAM:
-                value_ = self.get_ram_list(params)
+                result = self.__get_ram_list(value)
             elif component == Components.PSU:
-                value_ = self.get_psu_list(params)
+                result = self.__get_psu_list(value)
             else:
                 raise NotImplementedError(f"Parsing {component} is not implemented yet")
-            result.update({component: value_})
-
-        return result
+            return result
+        elif by == FindBy.SearchStr:
+            if component == Components.CPU:
+                result = self.__get_cpu_list_by_name(value)
+            elif component == Components.GPU:
+                result = self.__get_gpu_list_by_name(value)
+            # elif component == Components.MB:
+            #     result = self.__get_mb_list(value)
+            # elif component == Components.RAM:
+            #     result = self.__get_ram_list(value)
+            # elif component == Components.PSU:
+            #     result = self.__get_psu_list(value)
+            else:
+                raise NotImplementedError(f"Parsing {component} is not implemented yet")
+            return result
+        else:
+            raise NotImplementedError(f"Parsing by {by.value} is not implemented yet")
 
 
 db = Database()
@@ -176,5 +208,4 @@ if __name__ == '__main__':
 
     # for key, value in db.get_multiple_filters(*list(Components)).items():
     #     print(key, value, '--' * 15, sep='\n')
-
     print(time.perf_counter() - start)

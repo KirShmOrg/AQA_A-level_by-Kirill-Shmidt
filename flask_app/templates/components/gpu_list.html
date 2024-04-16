@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th class="text-center">Memory</th>
+<!--      <th class="text-center">Placeholder</th>-->
+      <th class="text-center">Release Year</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for gpu in gpu_list %}
+    {% if gpu.exists %}
+    <tr>
+      <td><a href="{{ gpu.further_link }}">{{gpu.human_name}}</a></td>
+      <td class="text-center">{{gpu.memory.size_gb}} GB of {{gpu.memory.type}}</td>
+<!--      <td class="text-center">{{gpu}}</td>-->
+      <td class="text-center">{{gpu.release_year}}</td>
+    </tr>
+    {% endif %}
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
