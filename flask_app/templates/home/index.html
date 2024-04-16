@@ -1,8 +1,9 @@
 {% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf%}
 
 {% block content %}
 <h1>Hello, {{ username }}</h1>
 <hr>
 <h2>CPU Search</h2>
-{{ render_form(cpu_search_form) }}
+{{ wtf.quick_form(cpu_search_form) }}
 {% endblock %}

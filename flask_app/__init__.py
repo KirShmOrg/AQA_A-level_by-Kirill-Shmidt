@@ -1,8 +1,11 @@
 from flask import Flask
 from flask_bootstrap import Bootstrap, BOOTSTRAP_VERSION
 
+from .config import Config
+
 
 app = Flask(__name__)
+app.config.from_object(Config())
 bootstrap = Bootstrap(app)
 
 from flask_app.controllers import home_controller, components_controller

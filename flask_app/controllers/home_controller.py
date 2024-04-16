@@ -1,14 +1,16 @@
-from flask import render_template
+from flask import render_template, redirect, url_for
 
 from flask_app import app
 from flask_app.forms.cpu_search_form import CpuSearch
 
 
-@app.route('/')
-@app.route('/home')
-@app.route('/index')
+@app.route('/', methods=["GET", "POST"])
 def index():
-    return render_template('home/index.html', username='guest', cpu_search_form=CpuSearch())
+    form = CpuSearch()
+    if form.validate_on_submit():
+        cpu_name = form.cpu_name.data
+        return redirect(url_for('show_cpu_page', cpu_name=cpu_name))
+    return render_template('home/index.html', username='guest', cpu_search_form=form)
 
 
 @app.route('/<username>')
