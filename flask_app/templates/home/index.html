@@ -1,9 +1,26 @@
 {% extends "base.html" %}
-{% import "bootstrap/wtf.html" as wtf%}
+{% from "bootstrap5/form.html" import render_form %}
 
-{% block content %}
+{% block app_content %}
+
+{% if username %}
 <h1>Hello, {{ username }}</h1>
+{% else %}
+<h1>Hello, guest</h1>
+{% endif %}
 <hr>
-<h2>CPU Search</h2>
-{{ wtf.quick_form(cpu_search_form) }}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul class="flashes">
+  {% for category, message in messages %}
+  <li class="{{category}}">{{message}}</li>
+  {% endfor %}
+</ul>
+<hr>
+{% endif %}
+{% endwith %}
+
+{{ render_form(search_form) }}
+
 {% endblock %}

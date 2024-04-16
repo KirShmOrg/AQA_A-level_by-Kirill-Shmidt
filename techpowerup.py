@@ -75,6 +75,7 @@ def generate_link(component: Components, params: dict, sort_by: str = 'name') ->
         query = ""
     return f"{LINKS[component]}{query}"
 
+
 def convert_table_to_list(table: Tag) -> list:
     headers_row = table.find('thead', {"class": ['colheader']}).find('tr')
     headers = []
@@ -85,7 +86,10 @@ def convert_table_to_list(table: Tag) -> list:
                 headers.append(header.text)
 
     result = []
-    for row in table.find_all('tr')[2:]:
+    all_trs = table.find_all('tr')
+    while 'name' in all_trs[0].text.strip().lower():
+        all_trs.pop(0)
+    for row in all_trs:
         count = 0
         tpu_component = {}
         link = row.find('a').attrs['href']
@@ -98,6 +102,7 @@ def convert_table_to_list(table: Tag) -> list:
         result.append(tpu_component)
 
     return result
+
 
 def fetch_component_list(component: Components, params: dict = None, sort_by: str = 'name') -> \
         Union[ErrorMessage, dict[Components, list]]:
@@ -121,6 +126,7 @@ def fetch_component_list(component: Components, params: dict = None, sort_by: st
 def get_cpu_socket(cpu: dict) -> str:
     return cpu['Socket'][len('Socket '):]  # this is very error-prone
     # TODO: make a proper socket class or sth
+
 
 def get_component_by_name(component: Components, name: str) -> list:
     link = f"{LINKS[component]}?ajaxsrch={name}"
@@ -163,6 +169,8 @@ def get_gpu_tdp(gpu_link: str) -> int:
 if __name__ == '__main__':
     # print(get_gpu_tdp('https://www.techpowerup.com/gpu-specs/radeon-rx-7600-xt.c4190'))
     # print(get_further_cpu_data('https://www.techpowerup.com/cpu-specs/ryzen-5-3600.c2132'))
-    # for cpu in get_component_by_name(Components.CPU, 'Pentium'):
-    #     print(cpu)
+    for cpu in get_component_by_name(Components.CPU, 'Ryzen'):
+        print(cpu)
+    # for gpu in get_component_by_name(Components.GPU, '4090'):
+    #     print(gpu)
     pass

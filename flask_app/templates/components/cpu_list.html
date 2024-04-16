@@ -1,28 +1,26 @@
 {% extends "base.html" %}
 
-{% block content %}
-<div class="container">
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th class="text-center">Socket</th>
-        <th class="text-center">TDP</th>
-        <th class="text-center">Cores / Threads</th>
-      </tr>
-    </thead>
-    <tbody>
+{% block app_content %}
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th class="text-center">Socket</th>
+      <th class="text-center">TDP</th>
+      <th class="text-center">Cores / Threads</th>
+      <th class="text-center">Release Year</th>
+    </tr>
+  </thead>
+  <tbody>
     {% for cpu in cpu_list %}
-      <tr>
-        <td>{{cpu.human_name}}</td>
-        <td class="text-center">{{cpu.socket}}</td>
-        <td class="text-center">{{cpu.tdp_w}} W</td>
-        <td class="text-center">{{cpu.cores}} / {{cpu.threads}}</td>
-      </tr>
+    <tr>
+      <td><a href="{{ cpu.further_link }}">{{cpu.human_name}}</a></td>
+      <td class="text-center">{{cpu.socket}}</td>
+      <td class="text-center">{{cpu.tdp_w}} W</td>
+      <td class="text-center">{{cpu.cores}} / {{cpu.threads}}</td>
+      <td class="text-center">{{cpu.release_year}}</td>
+    </tr>
     {% endfor %}
-    </tbody>
-  </table>
-
-
-</div>
+  </tbody>
+</table>
 {% endblock %}

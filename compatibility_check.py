@@ -1,9 +1,5 @@
-from component_classes.class_cpu import CPU
-from component_classes.class_gpu import GPU
-from component_classes.class_ram import RAM
-from component_classes.class_psu import PSU
-from component_classes.class_motherboard import Motherboard
-from class_database import db
+from component_classes import CPU, GPU, RAM, PSU, Motherboard
+from class_database import db, Components, FindBy
 
 
 # Finished
@@ -78,18 +74,28 @@ def check_all(cpu: CPU, gpu: GPU, ram_list: list[RAM], mb: Motherboard, psu: PSU
 
 
 if __name__ == '__main__':
-    test_cpu = db.get_cpu_list({'tdp': '65 W', 'socket': 'AMD Socket AM5'})[0]
+    test_cpu = db.get_one_component_list(Components.CPU, by=FindBy.Filters,
+                                         value={'tdp': '65 W', 'socket': 'AMD Socket AM5'})[0]
     test_cpu.convert_further_information()
     print(f"{test_cpu = }")
-    test_gpu = db.get_gpu_list({'mfgr': 'NVIDIA', 'gpu': 'GP104', 'generation': "GeForce 10"})[0]
+
+    test_gpu = db.get_one_component_list(Components.GPU, by=FindBy.Filters,
+                                         value={'mfgr': 'NVIDIA', 'gpu': 'GP104', 'generation': "GeForce 10"})[0]
     print(f"{test_gpu = }")
-    # noinspection PyPep8
-    test_ram = db.get_ram_list({'memory size': '8 GB', 'memory speed': '2666 MHz', 'Memory Technology': 'DDR4 SDRAM', 'form factor': 'DIMM'})[0]
+
+    test_ram = db.get_one_component_list(Components.RAM, by=FindBy.Filters,
+                                         value={'memory size': '8 GB', 'memory speed': '2666 MHz',
+                                                'Memory Technology': 'DDR4 SDRAM', 'form factor': 'DIMM'})[0]
     print(f"{test_ram = }")
-    test_psu = db.get_psu_list({'output power': '300 W'})[0]
+
+    test_psu = db.get_one_component_list(Components.PSU, by=FindBy.Filters,
+                                         value={'output power': '300 W'})[0]
     print(f"{test_psu = }")
-    test_mb = db.get_mb_list({'socket': "AM4", 'ram_type': 'DDR4', 'manufacturer': 'Biostar'})[0]
+
+    test_mb = db.get_one_component_list(Components.MB, by=FindBy.Filters,
+                                        value={'socket': "AM4", 'ram_type': 'DDR4', 'manufacturer': 'Biostar'})[0]
     test_mb.convert_further_data()
     print(f"{test_mb = }")
+
     # print(f"{test_cpu=}\n{test_mb=}\n{test_psu=}\n{test_ram=}\n{test_gpu=}")
     print(check_all(cpu=test_cpu, gpu=test_gpu, ram_list=[test_ram, test_ram], psu=test_psu, mb=test_mb))
