@@ -2,9 +2,27 @@
 
 {% block content%}
 <div class="container">
-  {% for cpu in cpu_list %}
-  <p>{{ cpu }}</p>
-  <hr>
-  {% endfor %}
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Socket</th>
+        <th>TDP</th>
+        <th>Cores / Threads</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for cpu in cpu_list %}
+      <tr>
+        <td>{{cpu.human_name}}</td>
+        <td>{{cpu.socket}}</td>
+        <td>{{cpu.tdp_w}} W</td>
+        <td>{{cpu.cores}} / {{cpu.threads}}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+
 </div>
 {% endblock %}
