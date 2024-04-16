@@ -17,6 +17,7 @@ def show_cpu_list():
     cpu_list = db.get_cpu_list(params=test_params)
     return render_template('components/cpu_list.html', title='Find CPUs', cpu_list=cpu_list)
 
+
 @app.route('/cpu/<cpu_name>')
 def show_cpu_page(cpu_name: str):
     cpu_list = db.get_cpu_list_by_name(cpu_name)
