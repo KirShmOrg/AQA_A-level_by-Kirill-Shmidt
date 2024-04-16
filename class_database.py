@@ -116,6 +116,12 @@ class Database:
         return [CPU(cpu) for cpu in component_list[Components.CPU]]
 
     @staticmethod
+    def get_cpu_list_by_name(cpu_name: str) -> Union[list[CPU], None]:
+        from techpowerup import get_component_by_name
+        cpu_list = [CPU(cpu) for cpu in get_component_by_name(Components.CPU, cpu_name)]
+        return cpu_list
+
+    @staticmethod
     def get_gpu_list(params: dict) -> Union[list[GPU], None]:
         from techpowerup import fetch_component_list
 

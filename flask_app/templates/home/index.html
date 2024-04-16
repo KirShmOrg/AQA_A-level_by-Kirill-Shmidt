@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Hello, new_user</h1>
+<h1>Hello, {{ username }}</h1>
+<hr>
+<h2>CPU Search</h2>
+{{ render_form(cpu_search_form) }}
 {% endblock %}

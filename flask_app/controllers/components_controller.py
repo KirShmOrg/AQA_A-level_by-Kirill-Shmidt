@@ -1,5 +1,7 @@
-from flask_app import app
 from flask import render_template
+
+from flask_app import app
+from flask_app.forms.cpu_search_form import CpuSearch
 from class_database import db, Components
 from techpowerup import generate_link as techpowerup_link
 
@@ -17,5 +19,5 @@ def show_cpu_list():
 
 @app.route('/cpu/<cpu_name>')
 def show_cpu_page(cpu_name: str):
-    print(cpu_name)
-    raise NotImplementedError("I can't fetch a single CPU for now")
+    cpu_list = db.get_cpu_list_by_name(cpu_name)
+    return render_template('components/cpu_list', cpu_list=cpu_list)
