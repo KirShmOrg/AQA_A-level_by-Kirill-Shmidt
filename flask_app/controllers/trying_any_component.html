@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content%}
+<div class="container">
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        {% for column in columns %}
+        <th class="text-center">{{ column}}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+    
+    </tbody>
+  </table>
+</div>
+
+{% for component in components %}
+{% endfor %}
+
+{% endblock %}
