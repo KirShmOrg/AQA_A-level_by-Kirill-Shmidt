@@ -6,18 +6,18 @@
     <thead>
       <tr>
         <th>Name</th>
-        <th>Socket</th>
-        <th>TDP</th>
-        <th>Cores / Threads</th>
+        <th class="text-center">Socket</th>
+        <th class="text-center">TDP</th>
+        <th class="text-center">Cores / Threads</th>
       </tr>
     </thead>
     <tbody>
     {% for cpu in cpu_list %}
       <tr>
         <td>{{cpu.human_name}}</td>
-        <td>{{cpu.socket}}</td>
-        <td>{{cpu.tdp_w}} W</td>
-        <td>{{cpu.cores}} / {{cpu.threads}}</td>
+        <td class="text-center">{{cpu.socket}}</td>
+        <td class="text-center">{{cpu.tdp_w}} W</td>
+        <td class="text-center">{{cpu.cores}} / {{cpu.threads}}</td>
       </tr>
     {% endfor %}
     </tbody>

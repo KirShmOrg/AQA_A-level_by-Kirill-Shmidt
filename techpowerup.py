@@ -1,5 +1,6 @@
 from typing import Union
 
+from bs4 import BeautifulSoup
 from bs4.element import Tag
 
 from class_database import db, Components, ErrorMessage
@@ -74,20 +75,7 @@ def generate_link(component: Components, params: dict, sort_by: str = 'name') ->
         query = ""
     return f"{LINKS[component]}{query}"
 
-
-def fetch_component_list(component: Components, params: dict = None, sort_by: str = 'name') -> \
-        Union[ErrorMessage, dict[Components, list]]:
-    if component not in LINKS.keys():
-        error = ErrorMessage(f'Fetching {component} is not possible')
-        return error
-    if sort_by not in ['name', 'released', 'generation']:
-        error = ErrorMessage(f"You can't sort by {sort_by}")
-        return error
-
-    link = generate_link(component=component, params=params, sort_by=sort_by)
-    page = page_from_link(link)
-
-    table = page.find('div', id="list").find('table')
+def convert_table_to_list(table: Tag) -> list:
     headers_row = table.find('thead', {"class": ['colheader']}).find('tr')
     headers = []
     for header in headers_row.contents:
@@ -109,12 +97,36 @@ def fetch_component_list(component: Components, params: dict = None, sort_by: st
             count += 1
         result.append(tpu_component)
 
+    return result
+
+def fetch_component_list(component: Components, params: dict = None, sort_by: str = 'name') -> \
+        Union[ErrorMessage, dict[Components, list]]:
+    if component not in LINKS.keys():
+        error = ErrorMessage(f'Fetching {component} is not possible')
+        return error
+    if sort_by not in ['name', 'released', 'generation']:
+        error = ErrorMessage(f"You can't sort by {sort_by}")
+        return error
+
+    link = generate_link(component=component, params=params, sort_by=sort_by)
+    page = page_from_link(link)
+
+    table = page.find('div', id="list").find('table')
+    result = convert_table_to_list(table=table)
+    # TODO: do some checking maybe? idk
+
     return {component: result}
 
 
 def get_cpu_socket(cpu: dict) -> str:
     return cpu['Socket'][len('Socket '):]  # this is very error-prone
     # TODO: make a proper socket class or sth
+
+def get_component_by_name(component: Components, name: str) -> list:
+    link = f"{LINKS[component]}?ajaxsrch={name}"
+    page = page_from_link(link)
+    table = page.find('table')
+    return convert_table_to_list(table=table)
 
 
 def get_further_cpu_data(link: str) -> dict:
@@ -150,4 +162,7 @@ def get_gpu_tdp(gpu_link: str) -> int:
 
 if __name__ == '__main__':
     # print(get_gpu_tdp('https://www.techpowerup.com/gpu-specs/radeon-rx-7600-xt.c4190'))
-    print(get_further_cpu_data('https://www.techpowerup.com/cpu-specs/ryzen-5-3600.c2132'))
+    # print(get_further_cpu_data('https://www.techpowerup.com/cpu-specs/ryzen-5-3600.c2132'))
+    # for cpu in get_component_by_name(Components.CPU, 'Pentium'):
+    #     print(cpu)
+    pass
