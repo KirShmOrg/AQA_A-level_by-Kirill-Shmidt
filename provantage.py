@@ -7,14 +7,13 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
 
-from custom_request import page_from_link
+from custom_request import page_from_link, BeautifulSoup
 from class_database import db, ErrorMessage
 from component_classes.class_ram import RAM
 from component_classes.class_psu import PSU
 from class_database import Components
 
 from time import sleep
-
 
 BASE_URL = "https://www.provantage.com/service/searchsvcs"
 LINKS = {Components.RAM: BASE_URL + '/B-CRAMM', Components.PSU: BASE_URL + '/B-PPSUP'}
@@ -157,15 +156,10 @@ def generate_link(component: Components, parameters: dict[str, str]) -> Union[st
     return link
 
 
-def get_component_list(component: Components, params: dict, as_objects: bool = True) -> list:
-    link = generate_link(parameters=params, component=component)
-    if isinstance(link, ErrorMessage):
-        print(link.message)
-        return []
-    page = page_from_link(link)
+def parse_page(page: BeautifulSoup) -> list[list[str]]:
     main_div = page.find(id='MAIN').find_all('table', attrs={'class': 'BOX2'})[2].next.next.next.next
-
     result_list = []
+
     for text_div in main_div.find_all('div', attrs={'class': 'BOX5B'}):
         product_a: Tag = text_div.find('a', attrs={'class': 'BOX5PRODUCT'})
         human_name = product_a.parent.text
@@ -173,6 +167,29 @@ def get_component_list(component: Components, params: dict, as_objects: bool = T
         temp_text = f"{text_div.text} - Name: {human_name} - Link: {further_link}"  # TODO: also add manufacturer's name
         temp_list = temp_text.split(' - ')
         result_list.append(temp_list)
+
+    return result_list
+
+
+def get_component_with_search(component: Components, search_str: str) -> Union[list, ErrorMessage]:
+    link = LINKS[component] + f"?QUERY={search_str}"
+    page = page_from_link(link)
+    result_list = parse_page(page)
+    if component == Components.RAM:
+        return [RAM(ram_) for ram_ in result_list]
+    elif component == Components.PSU:
+        return [PSU(psu_) for psu_ in result_list]
+    else:
+        return ErrorMessage(f"{component} is not supported by provantage")
+
+
+def get_component_list(component: Components, params: dict, as_objects: bool = True) -> list:
+    link = generate_link(parameters=params, component=component)
+    if isinstance(link, ErrorMessage):
+        print(link.message)
+        return []
+    page = page_from_link(link)
+    result_list = parse_page(page)
 
     if as_objects is False:
         return result_list

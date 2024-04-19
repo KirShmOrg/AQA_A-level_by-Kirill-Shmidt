@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th class="text-center">Capacity</th>
+      <th class="text-center">Speed</th>
+<!--      <th class="text-center">Placeholder</th>-->
+      <th class="text-center">DDR generation</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for ram in ram_list %}
+    <tr>
+      <td><a href="{{ ram.further_link }}">{{ram.product_name}}</a></td>
+      <td class="text-center">{{ram.size_gb}} GB</td>
+      <td class="text-center">{{ram.speed_mhz}}</td>
+<!--      <td class="text-center">{{ram}}</td>-->
+      <td class="text-center">{{ram.ddr_gen}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

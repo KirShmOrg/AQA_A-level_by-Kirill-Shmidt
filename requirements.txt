@@ -2,7 +2,6 @@ attrs==23.1.0
 beautifulsoup4==4.12.2
 blinker==1.7.0
 Bootstrap-Flask==2.4.0
-bs4==0.0.1
 certifi==2023.11.17
 cffi==1.16.0
 charset-normalizer==3.3.2
