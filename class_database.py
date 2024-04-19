@@ -128,13 +128,6 @@ class Database:
         return cpu_list
 
     @staticmethod
-    def __get_gpu_list_by_name(gpu_name: str) -> Union[list[GPU], None]:
-        from techpowerup import get_component_by_name
-
-        gpu_list = [GPU(gpu) for gpu in get_component_by_name(Components.GPU, gpu_name)]
-        return gpu_list
-
-    @staticmethod
     def __get_gpu_list(params: dict) -> Union[list[GPU], None]:
         from techpowerup import fetch_component_list
 
@@ -144,6 +137,13 @@ class Database:
             return
 
         return [GPU(gpu) for gpu in component_list[Components.GPU]]
+
+    @staticmethod
+    def __get_gpu_list_by_name(gpu_name: str) -> Union[list[GPU], None]:
+        from techpowerup import get_component_by_name
+
+        gpu_list = [GPU(gpu) for gpu in get_component_by_name(Components.GPU, gpu_name)]
+        return gpu_list
 
     @staticmethod
     def __get_mb_list(params: dict) -> Union[list[Motherboard], None]:
@@ -159,10 +159,22 @@ class Database:
         return get_component_list(component=Components.RAM, params=params, as_objects=True)
 
     @staticmethod
+    def __get_ram_list_by_name(ram_name: str) -> Union[list[RAM], None]:
+        from provantage import get_component_by_name
+
+        return get_component_by_name(Components.RAM, search_str=ram_name)
+
+    @staticmethod
     def __get_psu_list(params: dict) -> Union[list[PSU], None]:
         from provantage import get_component_list, Components
 
         return get_component_list(component=Components.PSU, params=params, as_objects=True)
+
+    @staticmethod
+    def __get_psu_list_by_name(psu_name: str) -> Union[list[PSU], None]:
+        from provantage import get_component_by_name
+
+        return get_component_by_name(Components.PSU, search_str=psu_name)
 
     def get_one_component_list(self, component: Components, by: FindBy, value: Union[dict[str, str], str]) -> \
             Union[list[ALL_COMPONENTS_TYPES], None]:
@@ -188,10 +200,10 @@ class Database:
                 result = self.__get_gpu_list_by_name(value)
             # elif component == Components.MB:
             #     result = self.__get_mb_list(value)
-            # elif component == Components.RAM:
-            #     result = self.__get_ram_list(value)
-            # elif component == Components.PSU:
-            #     result = self.__get_psu_list(value)
+            elif component == Components.RAM:
+                result = self.__get_ram_list_by_name(value)
+            elif component == Components.PSU:
+                result = self.__get_psu_list_by_name(value)
             else:
                 raise NotImplementedError(f"Parsing {component} is not implemented yet")
             return result

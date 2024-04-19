@@ -15,6 +15,7 @@ from class_database import Components
 
 from time import sleep
 
+
 BASE_URL = "https://www.provantage.com/service/searchsvcs"
 LINKS = {Components.RAM: BASE_URL + '/B-CRAMM', Components.PSU: BASE_URL + '/B-PPSUP'}
 PRODUCT_TYPES = {Components.RAM: 'RAM Module', Components.PSU: "Power Supply"}
@@ -171,10 +172,14 @@ def parse_page(page: BeautifulSoup) -> list[list[str]]:
     return result_list
 
 
-def get_component_with_search(component: Components, search_str: str) -> Union[list, ErrorMessage]:
+def get_component_by_name(component: Components, search_str: str, as_objects: bool = True) -> Union[list, ErrorMessage]:
     link = LINKS[component] + f"?QUERY={search_str}"
     page = page_from_link(link)
     result_list = parse_page(page)
+
+    if as_objects is False:
+        return result_list
+
     if component == Components.RAM:
         return [RAM(ram_) for ram_ in result_list]
     elif component == Components.PSU:
@@ -203,32 +208,22 @@ def get_component_list(component: Components, params: dict, as_objects: bool = T
 
 
 if __name__ == '__main__':
-    # test_cases = {
-    #     Components.RAM: {
-    #         'manufacturer': 'AddOn',
-    #         'memory size': '16 GB',
-    #         'memory speed': '2666 MHz',
-    #         'memory technology': 'DDR4 SDRAM'
-    #     },
-    #     Components.PSU: {
-    #         'manufacturer': "EVGA",
-    #         # 'modular': 'yes',
-    #         'output power': '650 W'
-    #     }
-    # }
-    # print(generate_link(Components.RAM, test_cases[Components.RAM]))
-    # for ram in get_component_list(component=Components.RAM, params=test_cases[Components.RAM]):
-    #     print(ram)
-    # print(generate_link(Components.PSU, test_cases[Components.PSU]))
-    # for psu in get_component_list(component=Components.PSU, params=test_cases[Components.PSU]):
-    #     print(psu)
-
-    filters = {}
-    for component in [Components.RAM, Components.PSU]:
-        filter_ = parse_filters(component)
-        filters[component.value] = filter_
-    # filters = parse_filters(Components.PSU)
-    with open('all_jsons/test.json', 'w') as file:
-        json.dump(filters, file, indent=4)
-        file.truncate()
-    # print(filters)
+    test_cases = {
+        Components.RAM: {
+            'manufacturer': 'AddOn',
+            'memory size': '16 GB',
+            'memory speed': '2666 MHz',
+            'memory technology': 'DDR4 SDRAM'
+        },
+        Components.PSU: {
+            'manufacturer': "EVGA",
+            # 'modular': 'yes',
+            'output power': '650 W'
+        }
+    }
+    print(generate_link(Components.RAM, test_cases[Components.RAM]))
+    for ram in get_component_list(component=Components.RAM, params=test_cases[Components.RAM]):
+        print(ram)
+    print(generate_link(Components.PSU, test_cases[Components.PSU]))
+    for psu in get_component_list(component=Components.PSU, params=test_cases[Components.PSU]):
+        print(psu)
