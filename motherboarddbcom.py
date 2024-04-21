@@ -1,11 +1,17 @@
-from typing import Union
+from typing import Union, TypedDict
 import time
 
 from bs4.element import Tag
-from class_database import db, Components
-from custom_request import page_from_link
+from class_database import db, Components, ErrorMessage
+from custom_request import page_from_link, BeautifulSoup
+
 
 BASE_URL = "https://motherboarddb.com/motherboards"
+
+
+class LinkAndQueryDict(TypedDict):
+    link: str
+    query: str
 
 
 def parse_filters() -> dict:
@@ -22,25 +28,33 @@ def parse_filters() -> dict:
     return result
 
 
-def generate_link_and_query(params: dict) -> dict[str, str]:
+def generate_link_and_query(params: dict) -> Union[LinkAndQueryDict, ErrorMessage]:
     # filters_time_start = time.perf_counter()
     allowed_filters = db.get_single_filter(Components.MB)
+    # TODO: make 'search' a CONSTANT in the `class_database.py`
+    if 'search' in params.keys() and isinstance(params['search'], str):
+        allowed_filters.update({'search': params['search']})  # I allow this specific search (funny solution)
     # TODO: allow the "value" variable to be a list
-    for filter_name, value in params.items():
-        if filter_name not in allowed_filters.keys():
-            return {'error': f'There is no such filter as {filter_name}'}
-        elif value not in allowed_filters[filter_name].keys():
-            return {'error': f'There is no such option as {value} in {filter_name}'}
+    for filter_name_, value_ in params.items():
+        if filter_name_ == 'search':
+            continue
+        if filter_name_ not in allowed_filters.keys():
+            return ErrorMessage(f'There is no such filter as {filter_name_}')
+        elif value_ not in allowed_filters[filter_name_].keys():
+            return ErrorMessage(f'There is no such option as {value_} in {filter_name_}')
     # print(f"Parsing filters: {time.perf_counter() - filters_time_start}")
 
     query = "?"
-    for filter_name, value in params.items():
-        query += f'{filter_name}={allowed_filters[filter_name][value]}&'
+    for filter_name_, value_ in params.items():
+        if filter_name_ == 'search':
+            query += f'{filter_name_}={value_}&'
+            continue
+        query += f'{filter_name_}={allowed_filters[filter_name_][value_]}&'
     query += 'page=1'
     return {"link": f"{BASE_URL}/ajax/table/{query}&dt=list", 'query': query}
 
 
-def parse_motherboards_list(params: dict) -> Union[dict, list[dict[str, str]]]:
+def parse_mb_page(page: BeautifulSoup, query: str) -> dict:
     def get_number_of_pages() -> int:
         nonlocal page
         pagination_options: list[Tag] = page.find('ul', {'class': 'pagination'}).find_all('li', {'class': 'page-item'})
@@ -50,12 +64,6 @@ def parse_motherboards_list(params: dict) -> Union[dict, list[dict[str, str]]]:
                 # but the issue is that when we have 1 page, there is no "Next", unlike with 2+ pages
                 max_page = int(li.text)
         return max_page
-
-    temp_dict = generate_link_and_query(params)
-    link, query = temp_dict['link'], temp_dict['query']
-    # request_time_start = time.perf_counter()
-    page = page_from_link(link)
-    # print(f"Receiving a page: {time.perf_counter() - request_time_start}")
 
     # parsing_time_start = time.perf_counter()
     result = {}
@@ -76,7 +84,6 @@ def parse_motherboards_list(params: dict) -> Union[dict, list[dict[str, str]]]:
             result.update({names[count // 2]: temp})
             count += 1
         time.sleep(1)
-    # print(f"Parsing the page: {time.perf_counter() - parsing_time_start}")
 
     # data_refactoring_time_start = time.perf_counter()
     for mb_name, properties in result.items():
@@ -92,6 +99,18 @@ def parse_motherboards_list(params: dict) -> Union[dict, list[dict[str, str]]]:
         # noinspection PyUnboundLocalVariable
         specs.update({'Link': "https://motherboarddb.com" + links[names.index(mb_name)]})
         result.update({mb_name: specs})
+    # print(f"Parsing the page: {time.perf_counter() - parsing_time_start}")
+
+    return result
+
+
+def get_motherboards_list(params: dict) -> Union[dict, list[dict[str, str]]]:
+    temp_dict = generate_link_and_query(params)
+    link, query = temp_dict['link'], temp_dict['query']
+    # request_time_start = time.perf_counter()
+    page = page_from_link(link)
+    # print(f"Receiving a page: {time.perf_counter() - request_time_start}")
+    result = parse_mb_page(page, query)
 
     final_result = []  # a bad, temporary solution
     # TODO: refactor the code to just do those lines in the main part
@@ -132,14 +151,20 @@ def get_further_information(link: str) -> dict:
 
 
 if __name__ == '__main__':
-    # mb_list = parse_motherboards_list(params={'manufacturer': 'Asus',
-    #                                           'form_factor': 'Micro-ATX',
-    #                                           'socket': 'AM4',
-    #                                           'chipset': 'AMD B450',
-    #                                           })
-    # print(f'{len(mb_list)} motherboards parsed')
-    # for mb in mb_list:
-    #     print(mb)
-    info = get_further_information('https://motherboarddb.com/motherboards/1463/ROG%20Strix%20B450-F%20Gaming/')
+    test_params = {
+        'search': 'B450M',
+        'manufacturer': 'Asus'
+    }
+    temp = generate_link_and_query(test_params)
+    if isinstance(temp, ErrorMessage):
+        print(temp.message)
+        exit()
+
+    print(temp['link'])
+    mb_list = get_motherboards_list(test_params)
+    print(f'{len(mb_list)} motherboards parsed')
+    for mb in mb_list:
+        print(mb)
+    info = get_further_information(mb_list[0]['Link'])
     for key, value in info.items():
         print(key, value, '--' * 15, sep='\n')

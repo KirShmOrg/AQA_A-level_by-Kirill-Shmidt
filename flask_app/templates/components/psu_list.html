@@ -16,7 +16,7 @@
       <td><a href="{{ psu.further_link }}">{{psu.product_name}}</a></td>
       <td class="text-center">{% if psu.wattage != 0 %}{{psu.wattage}} {%else%} --- {%endif%} W</td>
       <td class="text-center">{%if psu.efficiency!=0.0%}{{(psu.efficiency * 100)|round|int}}% {%else%} -- {%endif%}</td>
-<!--      <td class="text-center">{ psu}}</td>-->
+<!--      <td class="text-center">{{psu}}</td>-->
     </tr>
     {% endfor %}
   </tbody>

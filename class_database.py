@@ -147,10 +147,18 @@ class Database:
 
     @staticmethod
     def __get_mb_list(params: dict) -> Union[list[Motherboard], None]:
-        from motherboarddbcom import parse_motherboards_list
+        from motherboarddbcom import get_motherboards_list
 
-        mb_list = parse_motherboards_list(params=params)
+        mb_list = get_motherboards_list(params=params)
         return [Motherboard(mb) for mb in mb_list]
+
+    @staticmethod
+    def __get_mb_list_by_name(mb_name: str) -> Union[list[Motherboard], None]:
+        from motherboarddbcom import get_motherboards_list
+
+        mb_list = get_motherboards_list({'search': mb_name})
+        return [Motherboard(mb) for mb in mb_list]
+
 
     @staticmethod
     def __get_ram_list(params: dict) -> Union[list[RAM], None]:
@@ -198,8 +206,8 @@ class Database:
                 result = self.__get_cpu_list_by_name(value)
             elif component == Components.GPU:
                 result = self.__get_gpu_list_by_name(value)
-            # elif component == Components.MB:
-            #     result = self.__get_mb_list(value)
+            elif component == Components.MB:
+                result = self.__get_mb_list_by_name(value)
             elif component == Components.RAM:
                 result = self.__get_ram_list_by_name(value)
             elif component == Components.PSU:
