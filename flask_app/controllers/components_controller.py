@@ -9,7 +9,10 @@ def find_all_components_by_name(component_type: str, component_name: str):
     component = Components(component_type)
     component_list = db.get_one_component_list(component, by=FindBy.SearchStr, value=component_name)
     if component == Components.CPU:
-        return render_template('components/cpu_list.html', cpu_list=component_list)
+        return render_template('components/trying_any_component.html',
+                               component_list=component_list,
+                               human_columns=['Name', 'Socket', 'TDP', 'C/T', 'Release Year'],
+                               columns=['human_name', 'socket', 'tdp_w', 'cores', 'release_year'])
     elif component == Components.GPU:
         return render_template('components/gpu_list.html', gpu_list=component_list)
     elif component == Components.MB:
