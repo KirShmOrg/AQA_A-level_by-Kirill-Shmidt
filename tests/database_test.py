@@ -100,6 +100,6 @@ def main() -> None:
 
 
 if __name__ == '__main__':
-    # main()
-    for gpu in db.get_one_component_list(Components.GPU, by=FindBy.SearchStr, value='4090'):
-        print(gpu)
+    main()
+    # for gpu in db.get_one_component_list(Components.GPU, by=FindBy.SearchStr, value='4090'):
+    #     print(gpu)

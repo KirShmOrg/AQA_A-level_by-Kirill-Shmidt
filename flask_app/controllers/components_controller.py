@@ -12,8 +12,12 @@ def find_all_components_by_name(component_type: str, component_name: str):
         return render_template('components/cpu_list.html', cpu_list=component_list)
     elif component == Components.GPU:
         return render_template('components/gpu_list.html', gpu_list=component_list)
+    elif component == Components.MB:
+        return render_template('components/mb_list.html', mb_list=component_list)
     elif component == Components.RAM:
         return render_template('components/ram_list.html', ram_list=component_list)
+    elif component == Components.PSU:
+        return render_template('components/psu_list.html', psu_list=component_list)
     else:
         flash(f"Can't fetch {component_type}", "error")
         return redirect(url_for('index'))

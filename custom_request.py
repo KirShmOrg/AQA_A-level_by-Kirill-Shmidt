@@ -13,5 +13,6 @@ def request_get_v2(link: str, sleep_time: float = 1.0) -> Response:
         raise ConnectionError(f"Wrong status code (not 200): {response.status_code}:\n{response.text}")
     return get(link)
 
+
 def page_from_link(link: str, sleep_time: float = 1.0) -> BeautifulSoup:
     return BeautifulSoup(request_get_v2(link, sleep_time=sleep_time).text, features='html.parser')

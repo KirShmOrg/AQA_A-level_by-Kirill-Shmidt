@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th class="text-center">Output</th>
+      <th class="text-center">Efficiency</th>
+<!--      <th class="text-center">Placeholder</th>-->
+    </tr>
+  </thead>
+  <tbody>
+    {% for psu in psu_list %}
+    <tr>
+      <td><a href="{{ psu.further_link }}">{{psu.product_name}}</a></td>
+      <td class="text-center">{% if psu.wattage != 0 %}{{psu.wattage}} {%else%} --- {%endif%} W</td>
+      <td class="text-center">{%if psu.efficiency!=0.0%}{{(psu.efficiency * 100)|round|int}}% {%else%} -- {%endif%}</td>
+<!--      <td class="text-center">{{psu}}</td>-->
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
