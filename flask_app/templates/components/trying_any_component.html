@@ -2,26 +2,17 @@
 
 {% block content%}
 <div class="container">
-  <table class="table table-stripped">
+  <table>
     <thead>
       <tr>
-        {% for human_column in human_columns %}
-        <th {%if human_column!='Name' %}class="text-center" {%endif%}>{{human_column}}</th>
+        <th>Name</th>
+        {% for column in columns %}
+        <th class="text-center">{{ column}}</th>
         {% endfor %}
       </tr>
     </thead>
     <tbody>
-      {% for component in component_list %}
-      <tr>
-        {% for column in columns %}
-        {% if column in ['human_name', 'component_name'] %}
-        <td><a href="{{component['further_link']}}">{{component[column]}}</a></td>
-        {% else %}
-        <td class="text-center">{{component[column]}}</td>
-        {% endif %}
-        {% endfor %}
-      </tr>
-      {% endfor %}
+    
     </tbody>
   </table>
 </div>
