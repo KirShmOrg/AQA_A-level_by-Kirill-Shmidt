@@ -2,6 +2,7 @@ from flask import render_template, redirect, url_for, flash
 
 from flask_app import app
 from class_database import db, Components, FindBy
+from flask_app.forms.search_form import SearchForm
 
 
 @app.route('/find-all/<component_type>/<component_name>')
@@ -21,3 +22,14 @@ def find_all_components_by_name(component_type: str, component_name: str):
     else:
         flash(f"Can't fetch {component_type}", "error")
         return redirect(url_for('index'))
+
+
+@app.route('/find-all/<component_type>', methods=['get', 'post'])
+def specific_component_page(component_type: str):
+    component = Components(component_type)
+    form = SearchForm()
+    if form.validate_on_submit():
+        search_str = form.name.data
+        return redirect(url_for('find_all_components_by_name', component_type=component.value, component_name=search_str))
+    if component == Components.CPU:
+        return render_template('components/cpu_filters.html', search_form=form)
